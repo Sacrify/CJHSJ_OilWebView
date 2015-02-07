@@ -52,6 +52,7 @@
     <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\global.js" />
     <Content Include="Scripts\jquery-easyui-1.4.1\changelog.txt" />
     <Content Include="Scripts\jquery-easyui-1.4.1\demo\accordion\actions.html" />
     <Content Include="Scripts\jquery-easyui-1.4.1\demo\accordion\ajax.html" />

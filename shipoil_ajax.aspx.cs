@@ -140,6 +140,10 @@ namespace CJHSJ_OilWebView
             }
         }
 
+        /// <summary>
+        /// getShipInfoByMMSI
+        /// </summary>
+        /// <returns>ShipInfo</returns>
         private ShipInfo getShipInfoByMMSI()
         {
             dohOil.Reset();
@@ -165,6 +169,10 @@ namespace CJHSJ_OilWebView
                 return null;
             }
         }
+
+        /// <summary>
+        /// getShipInfo
+        /// </summary>
         private void getShipInfo()
         {
             List<ShipInfo> items = new List<ShipInfo>();
@@ -179,6 +187,9 @@ namespace CJHSJ_OilWebView
             dtHelp.ResutJsonStr((Object)items);
         }
 
+        /// <summary>
+        /// getShipOilInfo
+        /// </summary>
         private void getShipOilInfo()
         {
             if (string.IsNullOrEmpty(mmsi))
@@ -371,6 +382,11 @@ namespace CJHSJ_OilWebView
             return sailingTimeSpan.TotalHours;
         }
 
+        /// <summary>
+        /// Helper Function: getDurationTable
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         private string getDurationTable(DURATION_TYPE type)
         {
             string durationTable = "dbo.Ship_Voyeges3";

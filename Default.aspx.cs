@@ -9,9 +9,11 @@ namespace CJHSJ_OilWebView
 {
     public partial class DefaultPage : System.Web.UI.Page
     {
+        public string mmsiGot = "";
+
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            mmsiGot = Request["mmsi"]; 
         }
     }
 }
