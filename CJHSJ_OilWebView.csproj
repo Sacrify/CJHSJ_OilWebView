@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Oil_RealTime.aspx" />
+    <Content Include="Oil_Shippos.aspx" />
     <Content Include="Scripts\global.js" />
     <Content Include="Scripts\jquery-easyui-1.4.1\changelog.txt" />
     <Content Include="Scripts\jquery-easyui-1.4.1\demo\accordion\actions.html" />
@@ -642,6 +643,7 @@
     <Content Include="Scripts\jquery-easyui-1.4.1\themes\metro\validatebox.css" />
     <Content Include="Scripts\jquery-easyui-1.4.1\themes\metro\window.css" />
     <Content Include="shipoil_ajax.aspx" />
+    <Content Include="shipoil_list.aspx" />
     <Content Include="Styles\Site.css" />
     <Content Include="Global.asax" />
     <Content Include="Web.config">
@@ -653,7 +655,6 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
-    <Content Include="Default.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entity\RealtimeInfo.cs" />
@@ -668,20 +669,27 @@
     <Compile Include="Oil_RealTime.aspx.designer.cs">
       <DependentUpon>Oil_RealTime.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Default.aspx.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
+    <Compile Include="Oil_Shippos.aspx.cs">
+      <DependentUpon>Oil_Shippos.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Default.aspx.designer.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
+    <Compile Include="Oil_Shippos.aspx.designer.cs">
+      <DependentUpon>Oil_Shippos.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="shipoil_ajax.aspx.cs">
       <DependentUpon>shipoil_ajax.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="shipoil_ajax.aspx.designer.cs">
       <DependentUpon>shipoil_ajax.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="shipoil_list.aspx.cs">
+      <DependentUpon>shipoil_list.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="shipoil_list.aspx.designer.cs">
+      <DependentUpon>shipoil_list.aspx</DependentUpon>
     </Compile>
     <Compile Include="Utils\DbOperHandler.cs" />
     <Compile Include="Utils\dtHelp.cs" />

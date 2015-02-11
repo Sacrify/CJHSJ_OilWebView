@@ -1,8 +1,8 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="CJHSJ_OilWebView.DefaultPage" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="shipoil_list.aspx.cs" Inherits="CJHSJ_OilWebView.shipoil_list" %>
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="robots" content="noindex, nofollow" />
@@ -13,15 +13,47 @@
     <script src="Scripts/global.js" type="text/javascript"></script>
     <link rel="Stylesheet" type="text/css" href="Scripts/jquery-easyui-1.4.1/themes/default/easyui.css" />
     <link rel="Stylesheet" type="text/css" href="Scripts/jquery-easyui-1.4.1/themes/icon.css" />
-</head>
 
+    <script type="text/javascript">
+        var cur_mmsi = '';
+        var cur_shipname = '';
+
+        $(function () {
+            pageLoadTime = new Date();
+            var mmsiGot = '<%=mmsiGot%>';
+            if (mmsiGot != null && mmsiGot != "") {
+                $.ajax({
+                    type: "get",
+                    dataType: "json",
+                    data: "mmsi=" + mmsiGot,
+                    url: "shipoil_ajax.aspx?oper=getShipInfo",
+                    error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
+                    success: function (json) {
+                        if (json.length > 0) {
+                            var shipInfo = json[0];
+                            cur_mmsi = mmsiGot;
+                            cur_shipname = shipInfo.shipname;
+                        }
+                        else {
+                            alert("未安装该项服务，如需安装请联系027-82767708");
+                        }
+                    }
+                });
+            }
+        });
+
+
+    </script>
+
+</head>
 <body>
     <div id="tabs" class="easyui-tabs" fit="true" border="false">
         <div title="实时油耗">
             <div class="easyui-layout" style="width: 100%; height: 100%;">
-                <div data-options="region:'north'" style="height: 190px" title="North">
+                <div region="north" style="height: 290px" title="当前船位" iconCls="icon-monitor">
+                    <iframe width="100%" height="100%" id="posFrame" scrolling="no" frameborder="0" src="Oil_Shippos.aspx"></iframe>
                 </div>
-                <div data-options="region:'center',iconCls:'icon-ok'" title="Center">
+                <div region="center" iconCls="icon-ok" title="Center">
                 </div>
             </div>
         </div>

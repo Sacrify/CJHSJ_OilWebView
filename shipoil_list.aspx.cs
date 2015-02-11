@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 
 namespace CJHSJ_OilWebView
 {
-    public partial class DefaultPage : System.Web.UI.Page
+    public partial class shipoil_list : System.Web.UI.Page
     {
         public string mmsiGot = "";
 

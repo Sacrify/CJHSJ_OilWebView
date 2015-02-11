@@ -10,6 +10,6 @@
 namespace CJHSJ_OilWebView {
     
     
-    public partial class DefaultPage {
+    public partial class Oil_Shippos {
     }
 }
