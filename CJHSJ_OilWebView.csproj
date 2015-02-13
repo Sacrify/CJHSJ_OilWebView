@@ -644,6 +644,7 @@
     <Content Include="Scripts\jquery-easyui-1.4.1\themes\metro\window.css" />
     <Content Include="shipoil_ajax.aspx" />
     <Content Include="shipoil_list.aspx" />
+    <Content Include="Styles\global.css" />
     <Content Include="Styles\Site.css" />
     <Content Include="Global.asax" />
     <Content Include="Web.config">

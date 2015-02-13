@@ -19,7 +19,7 @@
             var remoteUrlNoMMSI = '<%=remoteUrlNoMMSI%>';
             if (mmsi != '' && mmsi != 'null' && mmsi != null) {
                 var myUrl = remoteUrl + "?mmsi=" + mmsi;
-                window.location.href = myUrl;
+                window.location.href = myUrl; // TODO: Known issue: Top.document.title cannot access.
             } else {
                 window.location.href = remoteUrlNoMMSI;
             }

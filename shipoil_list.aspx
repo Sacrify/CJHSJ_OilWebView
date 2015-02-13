@@ -15,23 +15,22 @@
     <link rel="Stylesheet" type="text/css" href="Scripts/jquery-easyui-1.4.1/themes/icon.css" />
 
     <script type="text/javascript">
-        var cur_mmsi = '';
+        var cur_mmsi = '<%=mmsiGot%>';
         var cur_shipname = '';
 
         $(function () {
             pageLoadTime = new Date();
-            var mmsiGot = '<%=mmsiGot%>';
-            if (mmsiGot != null && mmsiGot != "") {
+            if (cur_mmsi != null && cur_mmsi != "") {
                 $.ajax({
                     type: "get",
                     dataType: "json",
-                    data: "mmsi=" + mmsiGot,
+                    data: "mmsi=" + cur_mmsi,
                     url: "shipoil_ajax.aspx?oper=getShipInfo",
                     error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                     success: function (json) {
                         if (json.length > 0) {
                             var shipInfo = json[0];
-                            cur_mmsi = mmsiGot;
+                            cur_mmsi = shipInfo.mmsi;
                             cur_shipname = shipInfo.shipname;
                         }
                         else {
@@ -50,10 +49,13 @@
     <div id="tabs" class="easyui-tabs" fit="true" border="false">
         <div title="实时油耗">
             <div class="easyui-layout" style="width: 100%; height: 100%;">
-                <div region="north" style="height: 290px" title="当前船位" iconCls="icon-monitor">
-                    <iframe width="100%" height="100%" id="posFrame" scrolling="no" frameborder="0" src="Oil_Shippos.aspx"></iframe>
+                <div region="north" style="height: 290px" title="当前船位">
+                    <iframe width="100%" height="100%" id="posFrame" scrolling="no" frameborder="0"
+                        src="Oil_Shippos.aspx"></iframe>
                 </div>
-                <div region="center" iconCls="icon-ok" title="Center">
+                <div region="center" style="height:auto" title="实时数显">
+                    <iframe width="100%" height="100%" id="statFrame" scrolling="no" frameborder="0"
+                        src="Oil_RealTime.aspx"></iframe>
                 </div>
             </div>
         </div>
