@@ -41,6 +41,22 @@
             }
         });
 
+        function updateTitle(mmsi, shipname, x, y, time) {
+            $("#divShipPos").panel({
+                title: "当前船位 &nbsp;&nbsp;&nbsp;&nbsp;MMSI: " + mmsi + " &nbsp;&nbsp;&nbsp;&nbsp;船名: " + shipname + " &nbsp;&nbsp;&nbsp;&nbsp;经度: " + x + " &nbsp;&nbsp;&nbsp;&nbsp;纬度: " + y + " &nbsp;&nbsp;&nbsp;&nbsp;时间: " + time
+            });
+            $("#divRealTime").panel({
+                title: '实时数显 (<font color="#C6E1F4">蓝色</font>为正常值, <font color="#E11017">红色</font>为异常值, <font color="#C0C0C0">灰色</font>为离线值)'
+            });
+        }
+        function clearTitle() {
+            $("#divShipPos").panel({
+                title: "当前船位"
+            });
+            $("#divRealTime").panel({
+                title: "实时数显"
+            });
+        }
 
     </script>
 
@@ -49,12 +65,12 @@
     <div id="tabs" class="easyui-tabs" fit="true" border="false">
         <div title="实时油耗">
             <div class="easyui-layout" style="width: 100%; height: 100%;">
-                <div region="north" style="height: 290px" title="当前船位">
+                <div id="divShipPos" region="north" style="height: 290px" title="当前船位">
                     <iframe width="100%" height="100%" id="posFrame" scrolling="no" frameborder="0"
                         src="Oil_Shippos.aspx"></iframe>
                 </div>
-                <div region="center" style="height:auto" title="实时数显">
-                    <iframe width="100%" height="100%" id="statFrame" scrolling="no" frameborder="0"
+                <div id="divRealTime" region="center" style="height: auto; overflow:hidden" title="实时数显">
+                    <iframe width="100%" height="100%" id="statFrame" scrolling="auto" frameborder="0"
                         src="Oil_RealTime.aspx"></iframe>
                 </div>
             </div>
