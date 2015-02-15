@@ -71,6 +71,10 @@ namespace CJHSJ_OilWebView
             }
         }
 
+        /// <summary>
+        /// Check Form URL
+        /// </summary>
+        /// <returns></returns>
         public bool CheckFormUrl()
         {
             if (HttpContext.Current.Request.UrlReferrer == null)
@@ -84,6 +88,11 @@ namespace CJHSJ_OilWebView
             return true;
         }
 
+        /// <summary>
+        /// Return Query Parameter
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
         public string QueryString(string s) 
         {
             if (HttpContext.Current.Request.QueryString[s] != null && HttpContext.Current.Request.QueryString[s] != "")
@@ -93,6 +102,11 @@ namespace CJHSJ_OilWebView
             return string.Empty;
         }
 
+        /// <summary>
+        /// Return Post Parameter
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
         public string PostString(string s)
         {
             if (HttpContext.Current.Request.Form[s] != null && HttpContext.Current.Request.Form[s] != "")
@@ -102,6 +116,23 @@ namespace CJHSJ_OilWebView
             return string.Empty;
         }
 
+        /// <summary>
+        /// 输出json结果
+        /// </summary>
+        /// <param name="success">是否操作成功,0表示失败;1表示成功</param>
+        /// <param name="str">输出字符串</param>
+        /// <returns></returns>
+        public string JsonResult(int success, string str)
+        {
+            return "{\"result\" :\"" + success.ToString() + "\",\"returnval\" :\"" + str + "\"}";
+
+        }
+
+        /// <summary>
+        /// Page Load
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!CheckFormUrl())
@@ -133,6 +164,11 @@ namespace CJHSJ_OilWebView
                 case "getRealtimeStat":
                     getShipOilInfo();
                     getRealtimeStat();
+                    break;
+
+                case "getShipConfig":
+                    getShipOilInfo();
+                    getShipConfig();
                     break;
 
                 default:
@@ -210,6 +246,8 @@ namespace CJHSJ_OilWebView
                 {
                     oilType = 0;
                 }
+
+                this.companyID = dt.Rows[0]["company_id"].ToString();
             }
 
             {
@@ -217,7 +255,8 @@ namespace CJHSJ_OilWebView
                 sqlCmd =
                     "SELECT TOP 1 * " +
                     "FROM hsj_oil_density " +
-                    "WHERE OilTypeID = " + oilType.ToString();
+                    "WHERE CompanyID = " + this.companyID + " " +
+                    "AND OilTypeID = " + oilType.ToString();
                 dohOil.SqlCmd = sqlCmd;
                 dt = dohOil.GetDataTable();
                 if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
@@ -410,6 +449,188 @@ namespace CJHSJ_OilWebView
             }
 
             return durationTable;
+        }
+
+        private void getShipConfig()
+        {
+            ShipConfig config = null;
+
+            //调用油耗数据操作类
+            dohOil.Reset();
+
+            if (mmsi != null && mmsi.Length > 0)
+            {
+                string sqlCmd =
+                    "SELECT "
+                    + "TOP 1 "
+                    + "a.mmsi, "
+                    + "a.warning_llun, "
+                    + "a.warning_loil, "
+                    + "a.warning_speed, "
+                    + "a.warning_moil, "
+                    + "a.warning_rlun, "
+                    + "a.warning_roil "
+                    + "FROM ship_config a "
+                    + "WHERE "
+                    + "a.mmsi='" + mmsi + "'";
+
+                dohOil.SqlCmd = sqlCmd;
+                DataTable dt = dohOil.GetDataTable();
+
+                //绑定对象
+                if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
+                {
+                    if (config == null) config = new ShipConfig();
+                    if (dt.Rows[0]["mmsi"] != DBNull.Value) config.mmsi = mmsi;
+                    if (dt.Rows[0]["warning_llun"] != DBNull.Value) config.warning_llun = dt.Rows[0]["warning_llun"].ToString();
+                    if (dt.Rows[0]["warning_loil"] != DBNull.Value) config.warning_loil = dt.Rows[0]["warning_loil"].ToString();
+                    if (dt.Rows[0]["warning_speed"] != DBNull.Value) config.warning_speed = dt.Rows[0]["warning_speed"].ToString();
+                    if (dt.Rows[0]["warning_moil"] != DBNull.Value) config.warning_moil = dt.Rows[0]["warning_moil"].ToString();
+                    if (dt.Rows[0]["warning_rlun"] != DBNull.Value) config.warning_rlun = dt.Rows[0]["warning_rlun"].ToString();
+                    if (dt.Rows[0]["warning_roil"] != DBNull.Value) config.warning_roil = dt.Rows[0]["warning_roil"].ToString();
+                    config.oil_type = oilType.ToString();
+                    config.oil_density_summer = oilDensitySummer.ToString();
+                    config.oil_density_winter = oilDensityWinter.ToString();
+                }
+
+                //输出返回
+                if (config != null)
+                {
+                    dtHelp.ResutJsonStr((Object)config);
+                    //WriteLocalLog(Cxw.Utils.dtHelp.ToJson((Object)config));
+                }
+                else
+                {
+                    this._response = JsonResult(0, "未查找到数据");
+                }
+            }
+        }
+
+        private void setShipConfig()
+        {
+            if (string.IsNullOrEmpty(mmsi) == true)
+            {
+                return;
+            }
+
+            //调用油耗数据操作类
+            dohOil.Reset();
+            bool hasRecord = false;
+
+            string sqlCmd =
+                "SELECT "
+                + "TOP 1 * "
+                + "FROM ship_config "
+                + "WHERE "
+                + "mmsi='" + mmsi + "'";
+
+            dohOil.SqlCmd = sqlCmd;
+            DataTable dt = dohOil.GetDataTable();
+
+            if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
+            {
+                hasRecord = true;
+            }
+
+            //WriteLocalLog("SELECT ship_config: " + hasRecord.ToString());
+
+            dohOil.Reset();
+            sqlCmd = null;
+
+            if (hasRecord)
+            {
+                sqlCmd =
+                    "UPDATE ship_config " +
+                    "SET " +
+                    "warning_llun = " + QueryString("llun") + ", " +
+                    "warning_loil = " + QueryString("loil") + ", " +
+                    "warning_speed = " + QueryString("speed") + ", " +
+                    "warning_moil = " + QueryString("moil") + ", " +
+                    "warning_rlun = " + QueryString("rlun") + ", " +
+                    "warning_roil = " + QueryString("roil") + " " +
+                    "WHERE mmsi = '" + mmsi + "' ";
+            }
+            else
+            {
+                sqlCmd =
+                    "INSERT INTO ship_config " +
+                    "(mmsi, " +
+                    "warning_llun, " +
+                    "warning_loil, " +
+                    "warning_speed, " +
+                    "warning_moil, " +
+                    "warning_rlun, " +
+                    "warning_roil) " +
+                    "VALUES " +
+                    "( '" + mmsi + "', " +
+                    QueryString("llun") + ", " +
+                    QueryString("loil") + ", " +
+                    QueryString("speed") + ", " +
+                    QueryString("moil") + ", " +
+                    QueryString("rlun") + ", " +
+                    QueryString("roil") + ") ";
+            }
+
+            dohOil.SqlCmd = sqlCmd;
+            int result = dohOil.ExecuteSqlNonQuery();
+
+            //WriteLocalLog("save ship_config:" + result.ToString());
+
+            dohOil.Reset();
+            hasRecord = false;
+
+            sqlCmd =
+                    "SELECT TOP 1 * " +
+                    "FROM hsj_oil_density " +
+                    "WHERE CompanyID = " + this.companyID + " " +
+                    "AND OilTypeID = " + QueryString("oil_type");
+            dohOil.SqlCmd = sqlCmd;
+            dt = dohOil.GetDataTable();
+            if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
+            {
+                hasRecord = true;
+            }
+
+            //WriteLocalLog("SELECT hsj_oil_density: " + hasRecord.ToString());
+
+            dohOil.Reset();
+            if (hasRecord)
+            {
+                sqlCmd =
+                    "UPDATE hsj_oil_density " +
+                    "SET " +
+                    "OilDensitySummer = " + QueryString("oil_density_summer") + ", " +
+                    "OilDensityWinter = " + QueryString("oil_density_winter") + " " +
+                    "WHERE " +
+                    "CompanyID = " + this.companyID + " " +
+                    "AND OilTypeID = " + QueryString("oil_type");
+            }
+            else
+            {
+                sqlCmd =
+                    "INSERT INTO hsj_oil_density " +
+                    "(CompanyID, " +
+                    "OilTypeID, " +
+                    "OilDensitySummer, " +
+                    "OilDensityWinter) " +
+                    "VALUES " +
+                    "( " + this.companyID + ", " +
+                    QueryString("oil_type") + ", " +
+                    QueryString("oil_density_summer") + ", " +
+                    QueryString("oil_density_winer") + ")";
+            }
+
+            dohOil.SqlCmd = sqlCmd;
+            result = dohOil.ExecuteSqlNonQuery();
+
+            //WriteLocalLog("save hsj_oil_density:" + result.ToString());
+
+            this._response = JsonResult(1, "保存成功");
+        }
+
+        private void DefaultResponse()
+        {
+            this._response = JsonResult(0, "未知操作");
         }
     }
 }

@@ -69,33 +69,44 @@ function curDateTime() {
     return curDateTime;
 }
 
+function isValidValue(val) {
+    if (val == null || val == '' || val == undefined) {
+        return false;
+    }
 
-function ensurePositive(num) {
-
-    if (num == null || num == '' || num == undefined) return 0;
-
-    var floatNum = parseFloat(num);
-    if (isNaN(floatNum) == true) return 0;
-    if (isFinite(floatNum) == false) return 0;
-    if (floatNum < 0) return 0;
-
-    return floatNum;
+    return true;
 }
 
-function ensureValue(num) {
-    if (num == null || num == '' || num == undefined) return 0;
-    return num;
+function ensurePositive(num) {
+    var floatNum = ensureNum(num);
+    if (floatNum < 0) return 0;
+    return floatNum;
 }
 
 function ensureNum(num) {
 
-    if (num == null || num == '' || num == undefined) return 0;
+    if (isValidValue(num) == false) return 0;
 
     var floatNum = parseFloat(num);
     if (isNaN(floatNum) == true) return 0;
     if (isFinite(floatNum) == false) return 0;
 
     return floatNum;
+}
+
+function ensureValue(val) {
+    return ensureValueWithDef(val, 0);
+}
+
+function ensureValueWithDef(val, def) {
+    if (isValidValue(val) == false) {
+        if (isValidValue(def) == false) {
+            return 0;
+        } else {
+            return def;
+        }
+    }
+    return val;
 }
 
 /* 
@@ -146,21 +157,13 @@ function ParseDateString(dateString) {
 function OilHelper_GetOil(si) {
     var total_oil = 0;
     if (si.hasOwnProperty('oil')) {
-        if (
-        si.oil != undefined &&
-        si.oil != null &&
-        si.oil != ''
-        ) {
+        if (isValidValue(si.oil)) {
             total_oil += parseFloat(si.oil);
         }
     }
 
     if (si.hasOwnProperty('oil_ex')) {
-        if (
-        si.oil_ex != undefined &&
-        si.oil_ex != null &&
-        si.oil_ex != ''
-        ) {
+        if (isValidValue(si.oil_ex)) {
             total_oil += parseFloat(si.oil_ex);
         }
     }
@@ -172,21 +175,13 @@ function OilHelper_GetOilCost(si) {
     var total_oil_cost = 0;
 
     if (si.hasOwnProperty('oilcost')) {
-        if (
-        si.oilcost != undefined &&
-        si.oilcost != null &&
-        si.oilcost != ''
-        ) {
+        if (isValidValue(si.oilcost)) {
             total_oil_cost += parseFloat(si.oilcost);
         }
     }
 
     if (si.hasOwnProperty('oilcost_ex')) {
-        if (
-        si.oilcost_ex != undefined &&
-        si.oilcost_ex != null &&
-        si.oilcost_ex != ''
-        ) {
+        if (isValidValue(si.oilcost_ex)) {
             total_oil_cost += parseFloat(si.oilcost_ex);
         }
     }
@@ -197,10 +192,7 @@ function OilHelper_GetOilCost(si) {
 function OilHelper_GetMil(si) {
     var total_dist = 0;
     if (si.hasOwnProperty('mil')) {
-        if (
-        si.mil != undefined &&
-        si.mil != null &&
-        si.mil != '') {
+        if (isValidValue(si.mil)) {
             total_dist += parseFloat(si.mil);
         }
     }
@@ -211,10 +203,7 @@ function OilHelper_GetMil(si) {
 function OilHelper_GetSailTime(si) {
     var sail_time = 0;
     if (si.hasOwnProperty('sail_time')) {
-        if (
-        si.sail_time != undefined &&
-        si.sail_time != null &&
-        si.sail_time != '') {
+        if (isValidValue(si.sail_time)) {
             sail_time += parseFloat(si.sail_time);
         }
     }
@@ -225,10 +214,7 @@ function OilHelper_GetSailTime(si) {
 function OilHelper_GetRunningTime(si) {
     var running_time = 0;
     if (si.hasOwnProperty('running_time')) {
-        if (
-        si.running_time != undefined &&
-        si.running_time != null &&
-        si.running_time != '') {
+        if (isValidValue(si.running_time)) {
             running_time += parseFloat(si.running_time);
         }
     }
@@ -239,10 +225,7 @@ function OilHelper_GetRunningTime(si) {
 function OilHelper_GetPriceBTimeString(res) {
     var btime = 0;
     if (res.hasOwnProperty('PriceBTime')) {
-        if (
-            res.PriceBTime != undefined &&
-            res.PriceBTime != null &&
-            res.PriceBTime != '') {
+        if (isValidValue(res.PriceBTime)) {
             return res.PriceBTime;
         }
     }
@@ -253,11 +236,7 @@ function OilHelper_GetPriceBTimeString(res) {
 function OilHelper_GetPriceType(res) {
     var type = 0;
     if (res.hasOwnProperty('OilType')) {
-        if (
-            res.OilType != undefined &&
-            res.OilType != null &&
-            res.OilType != '') {
-
+        if (isValidValue(res.OilType)) {
             type = parseInt(res.OilType);
         }
     }
@@ -268,11 +247,7 @@ function OilHelper_GetPriceType(res) {
 function OilHelper_GetOilPrice(res) {
     var price = 0;
     if (res.hasOwnProperty('OilPrice')) {
-        if (
-            res.OilPrice != undefined &&
-            res.OilPrice != null &&
-            res.OilPrice != '') {
-
+        if (isValidValue(res.OilPrice)) {
             price = ensurePositive(res.OilPrice);
         }
     }

@@ -75,7 +75,7 @@
                         if (isOffline) {
                             pclass = "ch_content1_offline";
                         }
-                        else if (parent.getWarningSpeed() != 0 && shipDInfo.speed > parent.parent.getWarningSpeed()) {
+                        else if (parent.getWarningSpeed() != 0 && shipDInfo.speed > parent.getWarningSpeed()) {
                             pclass = "ch_content1_alarm";
                         }
                         else {
@@ -90,7 +90,7 @@
                         if (isOffline) {
                             pclass = "ch_content1_offline";
                         }
-                        else if (parent.parent.getWarningLlun() != 0 && shipDInfo.llunrps > parent.getWarningLlun()) {
+                        else if (parent.getWarningLlun() != 0 && shipDInfo.llunrps > parent.getWarningLlun()) {
                             pclass = "ch_content1_alarm";
                         }
                         else {
@@ -123,7 +123,7 @@
                         if (isOffline) {
                             pclass = "ch_content1_offline";
                         }
-                        else if (parent.parent.getWarningRlun() != 0 && shipDInfo.rlunrps > parent.getWarningRlun()) {
+                        else if (parent.getWarningRlun() != 0 && shipDInfo.rlunrps > parent.getWarningRlun()) {
                             pclass = "ch_content1_alarm";
                         }
                         else {
@@ -154,7 +154,7 @@
                         if (isOffline) {
                             pclass = "ch_content1_offline";
                         }
-                        else if (parent.parent.getWarningLoil() != 0 && shipDInfo.lmain_gps > parent.parent.getWarningLoil()) {
+                        else if (parent.getWarningLoil() != 0 && shipDInfo.lmain_gps > parent.getWarningLoil()) {
                             pclass = "ch_content1_alarm";
                         }
                         else {
@@ -169,7 +169,7 @@
                         if (isOffline) {
                             pclass = "ch_content1_offline";
                         }
-                        else if (parent.parent.getWarningRoil() != 0 && shipDInfo.rmain_gps > parent.parent.getWarningRoil()) {
+                        else if (parent.getWarningRoil() != 0 && shipDInfo.rmain_gps > parent.getWarningRoil()) {
                             pclass = "ch_content1_alarm";
                         }
                         else {
