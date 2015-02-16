@@ -42,7 +42,7 @@
                 type: "get",
                 dataType: "json",
                 data: "mmsi=" + mmsi,
-                url: "ajax/shipoil_ajax.aspx?oper=getRealtimeStat",
+                url: "shipoil_ajax.aspx?oper=getRealtimeStat",
                 error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                 success: function (json) {
                     if (json.length > 0) {
@@ -71,7 +71,7 @@
                         }
 
                         //速度检测
-                        shipDInfo.speed = ensurePositive(ensureNum(shipDInfo.speed));
+                        shipDInfo.speed = EnsurePositive(EnsureNum(shipDInfo.speed));
                         if (isOffline) {
                             pclass = "ch_content1_offline";
                         }
@@ -85,7 +85,7 @@
                         $("#speed").attr("class", pclass);
 
                         //左转速检测
-                        shipDInfo.llunrps = ensurePositive(ensureNum(shipDInfo.llunrps));
+                        shipDInfo.llunrps = EnsurePositive(EnsureNum(shipDInfo.llunrps));
 
                         if (isOffline) {
                             pclass = "ch_content1_offline";
@@ -118,7 +118,7 @@
 
 
                         //右转速检测
-                        shipDInfo.rlunrps = ensurePositive(ensureNum(shipDInfo.rlunrps));
+                        shipDInfo.rlunrps = EnsurePositive(EnsureNum(shipDInfo.rlunrps));
 
                         if (isOffline) {
                             pclass = "ch_content1_offline";
@@ -133,7 +133,7 @@
                         $("#rlun_rps").attr("class", pclass);
 
                         //主机油耗仪开关 0 关  1 开
-                        shipDInfo.rmpg_status = ensureValue(shipDInfo.rmpg_status);
+                        shipDInfo.rmpg_status = EnsureValue(shipDInfo.rmpg_status);
 
                         if (parseInt(shipDInfo.rmpg_status) == 0) {
                             $("#rmpg_status").html("■&nbsp;旁路");
@@ -161,7 +161,7 @@
                             pclass = "ch_conent1_oil_display";
                         }
                         //判断是否为空
-                        lgps = ensurePositive(ensureNum(shipDInfo.lmain_gps));
+                        lgps = EnsurePositive(EnsureNum(shipDInfo.lmain_gps));
                         $("#lmain_oil_gps").html(lgps.toFixed(3));
                         $("#lmain_oil_gps").attr("class", pclass);
 
@@ -176,11 +176,11 @@
                             pclass = "ch_conent1_oil_display";
                         }
                         //判断是否为空
-                        rgps = ensurePositive(ensureNum(shipDInfo.rmain_gps));
+                        rgps = EnsurePositive(EnsureNum(shipDInfo.rmain_gps));
                         $("#rmain_oil_gps").html(rgps.toFixed(3));
                         $("#rmain_oil_gps").attr("class", pclass);
 
-                        var allgps = ensurePositive(parseFloat(lgps) + parseFloat(rgps));
+                        var allgps = EnsurePositive(parseFloat(lgps) + parseFloat(rgps));
 
                         if (isOffline) {
                             pclass = "ch_content1_offline";
@@ -195,9 +195,9 @@
                         $("#ljyh").html(allgps.toFixed(3));
                         $("#ljyh").attr("class", pclass);
 
-                        $("#lrun_time").html(ensurePositive(ensureValue(shipDInfo.lrun_time)).toFixed(1));
-                        $("#rrun_time").html(ensurePositive(ensureValue(shipDInfo.rrun_time)).toFixed(1));
-                        $("#sail_time").html(ensurePositive(ensureValue(shipDInfo.sail_time)).toFixed(1));
+                        $("#lrun_time").html(EnsurePositive(EnsureValue(shipDInfo.lrun_time)).toFixed(1));
+                        $("#rrun_time").html(EnsurePositive(EnsureValue(shipDInfo.rrun_time)).toFixed(1));
+                        $("#sail_time").html(EnsurePositive(EnsureValue(shipDInfo.sail_time)).toFixed(1));
 
                         //更新标题
                         parent.updateTitle(mmsi, shipname, shipDInfo.pos_x, shipDInfo.pos_y, estime);

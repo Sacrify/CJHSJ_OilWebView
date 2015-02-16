@@ -69,7 +69,7 @@ function curDateTime() {
     return curDateTime;
 }
 
-function isValidValue(val) {
+function IsValidValue(val) {
     if (val == null || val == '' || val == undefined) {
         return false;
     }
@@ -77,15 +77,15 @@ function isValidValue(val) {
     return true;
 }
 
-function ensurePositive(num) {
-    var floatNum = ensureNum(num);
+function EnsurePositive(num) {
+    var floatNum = EnsureNum(num);
     if (floatNum < 0) return 0;
     return floatNum;
 }
 
-function ensureNum(num) {
+function EnsureNum(num) {
 
-    if (isValidValue(num) == false) return 0;
+    if (IsValidValue(num) == false) return 0;
 
     var floatNum = parseFloat(num);
     if (isNaN(floatNum) == true) return 0;
@@ -94,13 +94,13 @@ function ensureNum(num) {
     return floatNum;
 }
 
-function ensureValue(val) {
-    return ensureValueWithDef(val, 0);
+function EnsureValue(val) {
+    return EnsureValueWithDef(val, 0);
 }
 
-function ensureValueWithDef(val, def) {
-    if (isValidValue(val) == false) {
-        if (isValidValue(def) == false) {
+function EnsureValueWithDef(val, def) {
+    if (IsValidValue(val) == false) {
+        if (IsValidValue(def) == false) {
             return 0;
         } else {
             return def;
@@ -157,75 +157,75 @@ function ParseDateString(dateString) {
 function OilHelper_GetOil(si) {
     var total_oil = 0;
     if (si.hasOwnProperty('oil')) {
-        if (isValidValue(si.oil)) {
+        if (IsValidValue(si.oil)) {
             total_oil += parseFloat(si.oil);
         }
     }
 
     if (si.hasOwnProperty('oil_ex')) {
-        if (isValidValue(si.oil_ex)) {
+        if (IsValidValue(si.oil_ex)) {
             total_oil += parseFloat(si.oil_ex);
         }
     }
 
-    return ensurePositive(total_oil).toFixed(3);
+    return EnsurePositive(total_oil).toFixed(3);
 }
 
 function OilHelper_GetOilCost(si) {
     var total_oil_cost = 0;
 
     if (si.hasOwnProperty('oilcost')) {
-        if (isValidValue(si.oilcost)) {
+        if (IsValidValue(si.oilcost)) {
             total_oil_cost += parseFloat(si.oilcost);
         }
     }
 
     if (si.hasOwnProperty('oilcost_ex')) {
-        if (isValidValue(si.oilcost_ex)) {
+        if (IsValidValue(si.oilcost_ex)) {
             total_oil_cost += parseFloat(si.oilcost_ex);
         }
     }
 
-    return ensurePositive(total_oil_cost).toFixed(2);
+    return EnsurePositive(total_oil_cost).toFixed(2);
 }
 
 function OilHelper_GetMil(si) {
     var total_dist = 0;
     if (si.hasOwnProperty('mil')) {
-        if (isValidValue(si.mil)) {
+        if (IsValidValue(si.mil)) {
             total_dist += parseFloat(si.mil);
         }
     }
 
-    return ensurePositive(total_dist).toFixed(2);
+    return EnsurePositive(total_dist).toFixed(2);
 }
 
 function OilHelper_GetSailTime(si) {
     var sail_time = 0;
     if (si.hasOwnProperty('sail_time')) {
-        if (isValidValue(si.sail_time)) {
+        if (IsValidValue(si.sail_time)) {
             sail_time += parseFloat(si.sail_time);
         }
     }
 
-    return ensurePositive(sail_time).toFixed(1);
+    return EnsurePositive(sail_time).toFixed(1);
 }
 
 function OilHelper_GetRunningTime(si) {
     var running_time = 0;
     if (si.hasOwnProperty('running_time')) {
-        if (isValidValue(si.running_time)) {
+        if (IsValidValue(si.running_time)) {
             running_time += parseFloat(si.running_time);
         }
     }
 
-    return ensurePositive(running_time).toFixed(1);
+    return EnsurePositive(running_time).toFixed(1);
 }
 
 function OilHelper_GetPriceBTimeString(res) {
     var btime = 0;
     if (res.hasOwnProperty('PriceBTime')) {
-        if (isValidValue(res.PriceBTime)) {
+        if (IsValidValue(res.PriceBTime)) {
             return res.PriceBTime;
         }
     }
@@ -236,7 +236,7 @@ function OilHelper_GetPriceBTimeString(res) {
 function OilHelper_GetPriceType(res) {
     var type = 0;
     if (res.hasOwnProperty('OilType')) {
-        if (isValidValue(res.OilType)) {
+        if (IsValidValue(res.OilType)) {
             type = parseInt(res.OilType);
         }
     }
@@ -247,8 +247,8 @@ function OilHelper_GetPriceType(res) {
 function OilHelper_GetOilPrice(res) {
     var price = 0;
     if (res.hasOwnProperty('OilPrice')) {
-        if (isValidValue(res.OilPrice)) {
-            price = ensurePositive(res.OilPrice);
+        if (IsValidValue(res.OilPrice)) {
+            price = EnsurePositive(res.OilPrice);
         }
     }
 

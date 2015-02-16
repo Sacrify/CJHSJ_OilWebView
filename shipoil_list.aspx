@@ -17,7 +17,6 @@
     <script type="text/javascript">
         var cur_mmsi = '<%=mmsiGot%>';
         var cur_shipname = '';
-        var interval;
         var pageLoadTime;
 
         var warning_llun = 0;
@@ -34,9 +33,13 @@
         var oil_density_summer = OIL_DEF_DENSITY_SUMMER;
         var oil_density_winter = OIL_DEF_DENSITY_WINTER;
 
+        var interval;
+        var TIMER_DEF_INTERVAL = 20000;
+        var longTimerCount = 0;
+
         $(function () {
             pageLoadTime = new Date();
-            if (cur_mmsi != null && cur_mmsi != "") {
+            if (IsValidValue(cur_mmsi)) {
                 $.ajax({
                     type: "get",
                     dataType: "json",
@@ -48,6 +51,14 @@
                             var shipInfo = json[0];
                             cur_mmsi = shipInfo.mmsi;
                             cur_shipname = shipInfo.shipname;
+
+                            // On start up, get ready for configuration
+                            GetShipConfig();
+
+                            // Start Timer
+                            ResetInterval();
+
+
                         }
                         else {
                             alert("未安装该项服务，如需安装请联系027-82767708");
@@ -80,11 +91,8 @@
         ///
         function GetShipConfig() {
 
-            if (cur_mmsi == undefined ||
-                cur_mmsi == null ||
-                cur_mmsi == '') {
-
-                resetConfigValues();
+            if (IsValidValue(cur_mmsi) == false) {
+                ResetConfigValues();
                 return;
             }
 
@@ -92,30 +100,28 @@
                 type: "get",
                 dataType: "json",
                 data: "mmsi=" + cur_mmsi,
-                url: "ajax/shipoil_ajax.aspx?oper=getShipConfig",
+                url: "shipoil_ajax.aspx?oper=getShipConfig",
                 error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                 success: function (json) {
                     var shipConfig = json;
-                    if ((shipConfig.hasOwnProperty('mmsi') == false) ||
-                    (shipConfig.mmsi == undefined ||
-                     shipConfig.mmsi == null ||
-                     shipConfig.mmsi == '' ||
-                     shipConfig.mmsi != cur_mmsi)) {
-                        resetConfigValues();
+                    if ((shipConfig.hasOwnProperty('mmsi') == false) || 
+                        (IsValidValue(shipConfig.mmsi) == false) || 
+                        (shipConfig.mmsi != cur_mmsi)) {
+                        ResetConfigValues();
                         return;
                     }
 
-                    warning_llun = ensureValue(shipConfig.warning_llun);
-                    warning_loil = ensureValue(shipConfig.warning_loil);
-                    warning_speed = ensureValue(shipConfig.warning_speed);
-                    warning_moil = ensureValue(shipConfig.warning_moil);
-                    warning_rlun = ensureValue(shipConfig.warning_rlun);
-                    warning_roil = ensureValue(shipConfig.warning_roil);
-                    oil_type = ensureValue(shipConfig.oil_type);
-                    oil_density_summer = ensureValueWithDef(shipConfig.oil_density_summer, OIL_DEF_DENSITY_SUMMER);
-                    oil_density_winter = ensureValueWithDef(shipConfig.oil_density_winter, OIL_DEF_DENSITY_WINTER);
+                    warning_llun = EnsureValue(shipConfig.warning_llun);
+                    warning_loil = EnsureValue(shipConfig.warning_loil);
+                    warning_speed = EnsureValue(shipConfig.warning_speed);
+                    warning_moil = EnsureValue(shipConfig.warning_moil);
+                    warning_rlun = EnsureValue(shipConfig.warning_rlun);
+                    warning_roil = EnsureValue(shipConfig.warning_roil);
+                    oil_type = EnsureValue(shipConfig.oil_type);
+                    oil_density_summer = EnsureValueWithDef(shipConfig.oil_density_summer, OIL_DEF_DENSITY_SUMMER);
+                    oil_density_winter = EnsureValueWithDef(shipConfig.oil_density_winter, OIL_DEF_DENSITY_WINTER);
 
-                    setConfigValues2UI();
+                    SetConfigValues2UI();
                 }
             });
         }
@@ -126,16 +132,16 @@
                 dataType: "json",
                 data:
                 "mmsi=" + cur_mmsi +
-                "&llun=" + ensurePositive(warning_llun) +
-                "&loil=" + ensurePositive(warning_loil) +
-                "&speed=" + ensurePositive(warning_speed) +
-                "&moil=" + ensurePositive(warning_moil) +
-                "&rlun=" + ensurePositive(warning_rlun) +
-                "&roil=" + ensurePositive(warning_roil) +
-                "&oil_type=" + ensurePositive(oil_type) +
-                "&oil_density_summer=" + ensurePositive(oil_density_summer) +
-                "&oil_density_winter=" + ensurePositive(oil_density_winter),
-                url: "ajax/shipoil_ajax.aspx?oper=setShipConfig",
+                "&llun=" + EnsurePositive(warning_llun) +
+                "&loil=" + EnsurePositive(warning_loil) +
+                "&speed=" + EnsurePositive(warning_speed) +
+                "&moil=" + EnsurePositive(warning_moil) +
+                "&rlun=" + EnsurePositive(warning_rlun) +
+                "&roil=" + EnsurePositive(warning_roil) +
+                "&oil_type=" + EnsurePositive(oil_type) +
+                "&oil_density_summer=" + EnsurePositive(oil_density_summer) +
+                "&oil_density_winter=" + EnsurePositive(oil_density_winter),
+                url: "shipoil_ajax.aspx?oper=setShipConfig",
                 error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                 success: function (json) {
                     $.messager.show({
@@ -148,7 +154,7 @@
         }
         
 
-        function resetConfigValues() {
+        function ResetConfigValues() {
             warning_llun = 0;
             warning_loil = 0;
             warning_speed = 0;
@@ -156,10 +162,10 @@
             warning_rlun = 0;
             warning_roil = 0;
 
-            setConfigValues2UI();
+            SetConfigValues2UI();
         }
 
-        function setConfigValues2UI() {
+        function SetConfigValues2UI() {
             var rightConfigWindow = document.getElementById("rightConfigFrame").contentWindow;
             if (rightConfigWindow) {
                 rightConfigWindow.UpdateConfigUI();
@@ -167,31 +173,31 @@
         }
 
         function getWarningLlun() {
-            return ensurePositive(warning_llun);
+            return EnsurePositive(warning_llun);
         }
 
         function getWarningLoil() {
-            return ensurePositive(warning_loil);
+            return EnsurePositive(warning_loil);
         }
 
         function getWarningSpeed() {
-            return ensurePositive(warning_speed);
+            return EnsurePositive(warning_speed);
         }
 
         function getWarningMoil() {
-            return ensurePositive(warning_moil);
+            return EnsurePositive(warning_moil);
         }
 
         function getWarningRlun() {
-            return ensurePositive(warning_rlun);
+            return EnsurePositive(warning_rlun);
         }
 
         function getWarningRoil() {
-            return ensurePositive(warning_roil);
+            return EnsurePositive(warning_roil);
         }
 
         function getOilType() {
-            return ensurePositive(oil_type);
+            return EnsurePositive(oil_type);
         }
 
         function getOilTypeString() {
@@ -204,15 +210,69 @@
         }
 
         function getOilSeason() {
-            return ensurePositive(oil_season);
+            return EnsurePositive(oil_season);
         }
 
         function getOilDensitySummer() {
-            return ensurePositive(oil_density_summer);
+            return EnsurePositive(oil_density_summer);
         }
 
         function getOilDensityWinter() {
-            return ensurePositive(oil_density_winter);
+            return EnsurePositive(oil_density_winter);
+        }
+
+        ///
+        /// Timer
+        ///
+        function ResetInterval() {
+            ClearTimer();
+            interval = window.setInterval('UpdateOilInfo()', TIMER_DEF_INTERVAL);
+        }
+
+        function ClearTimer() {
+            if (interval != null) {
+                window.clearInterval(interval);
+                interval = null;
+            }
+        }
+
+        function UpdateOilInfo() {
+            if (IsValidValue(cur_mmsi)) {
+                var statWindow = document.getElementById("statFrame").contentWindow;
+                if (statWindow) {
+                    statWindow.getRealtimeStat();
+                }
+
+
+//                var rightHisStatWindow = document.getElementById("rightHisStaFrame").contentWindow;
+//                if (rightHisStatWindow) {
+//                    var timingStatWindow = rightHisStatWindow.document.getElementById("meterFrame").contentWindow;
+//                    if (timingStatWindow) {
+//                        timingStatWindow.updateStat();
+//                    }
+//                }
+
+//                longTimerCount++;
+
+//                if (longTimerCount >= 12) {
+//                    longTimerCount = 0;
+
+//                    GetOilHisStaInfo();
+//                }
+
+            }
+        }
+
+        function GetOilHisStaInfo() {
+//            if (cur_mmsi != '') {
+//                var rightHisWindow = document.getElementById("rightHisStaFrame").contentWindow;
+//                if (rightHisWindow) {
+//                    var chartWindow = rightHisWindow.document.getElementById("grapFrame").contentWindow;
+//                    if (chartWindow) {
+//                        chartWindow.updateShip();
+//                    }
+//                }
+//            }
         }
 
     </script>
@@ -235,6 +295,9 @@
         <div title="累计油耗">
 <%--        <iframe width="100%" height="100%" id="rightHisStaFrame" scrolling="no" frameborder="0"
             src="Oil_rightHisSta.aspx"></iframe>--%>
+            <div class="easyui-layout" style="width: 100%; height: 100%;">
+                
+            </div>
         </div>
         <div title="历史报表">
 <%--        <iframe width="100%" height="100%" id="rightHisFrame" scrolling="no" frameborder="0"
