@@ -293,10 +293,15 @@
             </div>
         </div>
         <div title="累计油耗">
-<%--        <iframe width="100%" height="100%" id="rightHisStaFrame" scrolling="no" frameborder="0"
-            src="Oil_rightHisSta.aspx"></iframe>--%>
             <div class="easyui-layout" style="width: 100%; height: 100%;">
-                
+                <div region="north" title="计时油耗" split="true" style="height: 200px;">
+<%--                    <iframe width="100%" height="100%" id="meterFrame" scrolling="auto" frameborder="0"
+                        src="Oil_rightAccumulationSta_timing.aspx"></iframe>--%>
+                </div>
+                <div region="center" title="累计油耗" split="true" style="height: 400px;" iconcls="icon-sum">
+<%--                    <iframe width="100%" height="100%" id="grapFrame" scrolling="auto" frameborder="0"
+                        src="Oil_rightAccumulationSta.aspx"></iframe>--%>
+                </div>
             </div>
         </div>
         <div title="历史报表">

@@ -54,6 +54,7 @@
   <ItemGroup>
     <Content Include="Oil_RealTime.aspx" />
     <Content Include="Oil_Shippos.aspx" />
+    <Content Include="Oil_Timing.aspx" />
     <Content Include="Scripts\global.js" />
     <Content Include="Scripts\jquery-easyui-1.4.1\changelog.txt" />
     <Content Include="Scripts\jquery-easyui-1.4.1\demo\accordion\actions.html" />
@@ -677,6 +678,13 @@
     </Compile>
     <Compile Include="Oil_Shippos.aspx.designer.cs">
       <DependentUpon>Oil_Shippos.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Oil_Timing.aspx.cs">
+      <DependentUpon>Oil_Timing.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Oil_Timing.aspx.designer.cs">
+      <DependentUpon>Oil_Timing.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="shipoil_ajax.aspx.cs">
