@@ -286,7 +286,7 @@
                     <iframe width="100%" height="100%" id="posFrame" scrolling="no" frameborder="0"
                         src="Oil_Shippos.aspx"></iframe>
                 </div>
-                <div id="divRealTime" region="center" style="height: auto; overflow:hidden" title="实时数显">
+                <div id="divRealTime" region="center" style="height: auto; overflow:hidden;" title="实时数显">
                     <iframe width="100%" height="100%" id="statFrame" scrolling="auto" frameborder="0"
                         src="Oil_RealTime.aspx"></iframe>
                 </div>
@@ -294,9 +294,9 @@
         </div>
         <div title="累计油耗">
             <div class="easyui-layout" style="width: 100%; height: 100%;">
-                <div region="north" title="计时油耗" split="true" style="height: 200px;">
-<%--                    <iframe width="100%" height="100%" id="meterFrame" scrolling="auto" frameborder="0"
-                        src="Oil_rightAccumulationSta_timing.aspx"></iframe>--%>
+                <div region="north" title="计时油耗" split="true" style=" height:200px; overflow:hidden;">
+                    <iframe width="100%" height="100%" id="timingFrame" scrolling="auto" frameborder="0"
+                        src="Oil_Timing.aspx"></iframe>
                 </div>
                 <div region="center" title="累计油耗" split="true" style="height: 400px;" iconcls="icon-sum">
 <%--                    <iframe width="100%" height="100%" id="grapFrame" scrolling="auto" frameborder="0"
