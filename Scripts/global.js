@@ -69,6 +69,10 @@ function curDateTime() {
     return curDateTime;
 }
 
+function GetCurDateTimeString() {
+    return (new Date()).format('yyyy-MM-dd hh:mm:ss');
+}
+
 function IsValidValue(val) {
     if (val == null || val == '' || val == undefined) {
         return false;

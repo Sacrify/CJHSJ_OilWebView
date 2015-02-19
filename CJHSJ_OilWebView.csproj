@@ -659,9 +659,13 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\HSJ_OilPrice.cs" />
+    <Compile Include="Entity\OilHis.cs" />
     <Compile Include="Entity\RealtimeInfo.cs" />
     <Compile Include="Entity\ShipConfig.cs" />
     <Compile Include="Entity\ShipInfo.cs" />
+    <Compile Include="Entity\ShipSailTime.cs" />
+    <Compile Include="Entity\TimingStatistics.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

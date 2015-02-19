@@ -39,6 +39,12 @@
         var oilCostTotal = 0;
         var milTotal = 0;
 
+
+        $(function () {
+            //初始化累计cookie
+            LoadCookie();
+        });
+
         function EnsureMMSI() {
             var mmsi = parent.cur_mmsi;
 
@@ -53,12 +59,6 @@
 
             return true;
         }
-
-
-        $(function () {
-            //初始化累计cookie
-            LoadCookie();
-        });
 
         function RefreshRealTimeUI() {
             $("#timing_start_time").html(timingStartTime);
@@ -133,29 +133,205 @@
 
             //初始化累计变量
             isTiming = getCookie("isTiming" + mmsi);
-            if (isTiming == null) {
+            if (IsValidValue(isTiming) && isTiming == "true") {
+                isTiming = true;
+                var cdt = getCookie("sTime" + mmsi);
+                timingEndTime = timingStartTime = IsValidValue(cdt) ? cdt : GetCurDateTimeString();
+                UpdateTiming();
+            } else {
                 isTiming = false;
-            }
-            else {
-                if (isTiming == "true") {
-                    //时间cookie
-                    isTiming = true;
-                    var cdt = getCookie("sTime" + mmsi);
-                    if (cdt == null) {
-                        timingEndTime = timingStartTime = (new Date()).format('yyyy-MM-dd hh:mm:ss');
-                    }
-                    else {
-                        timingEndTime = timingStartTime = cdt;
-                    }
-
-                    //updateStat();
-                }
-                else {
-                    isTiming = false;
-                }
             }
         }
 
+        function SaveTiming2Hist() {
+            if (EnsureMMSI() == false) return;
+            var mmsi = parent.cur_mmsi;
+
+            $("#hist_timing_start_time").html(EnsureValue(timingStartTime));
+            $("#hist_timing_end_time").html(EnsureValue(timingEndTime));
+            $("#hist_timing_mil").html(EnsurePositive(milTotal).toFixed(2));
+            $("#hist_timing_sail_time").html(EnsurePositive(sailTime).toFixed(1));
+            $("#hist_timing_running_time").html(EnsurePositive(runningTime).toFixed(1));
+            $("#hist_timing_oil").html(EnsurePositive(oilTotal).toFixed(3));
+            $("#hist_timing_oil_cost").html(EnsurePositive(oilCostTotal).toFixed(2));
+
+            delCookie("timing_hist_stime" + mmsi);
+            delCookie("timing_hist_etime" + mmsi);
+            delCookie("timing_hist_sailtime" + mmsi);
+            delCookie("timing_hist_runningtime" + mmsi);
+            delCookie("timing_hist_oil" + mmsi);
+            delCookie("timing_hist_oil_cost" + mmsi);
+            delCookie("timing_hist_mil" + mmsi);
+
+            setCookie("timing_hist_stime" + mmsi, EnsureValue(timingStartTime));
+            setCookie("timing_hist_etime" + mmsi, EnsureValue(timingEndTime));
+            setCookie("timing_hist_mil" + mmsi, EnsurePositive(milTotal).toFixed(2));
+            setCookie("timing_hist_sailtime" + mmsi, EnsurePositive(sailTime).toFixed(1));
+            setCookie("timing_hist_runningtime" + mmsi, EnsurePositive(runningTime).toFixed(1));
+            setCookie("timing_hist_oil" + mmsi, EnsurePositive(oilTotal).toFixed(3));
+            setCookie("timing_hist_oil_cost" + mmsi, EnsurePositive(oilCostTotal).toFixed(2));
+        }
+
+        function StartTiming() {
+            $.messager.confirm('启动累计', (isTiming == true) ? '确认重新启动累计？' : '确认启动累计？', function (r) {
+                if (r) {
+                    if (EnsureMMSI() == false) return;
+                    var mmsi = parent.cur_mmsi;
+
+                    if (isTiming == true) {
+                        SaveTiming2Hist();
+                    }
+                    isTiming = true;
+
+                    //更新是否启动累计cookie
+                    setCookie("isTiming" + mmsi, "true");
+
+                    //设置起时间
+                    timingEndTime = timingStartTime = (new Date()).format('yyyy-MM-dd hh:mm:ss');
+                    setCookie("sTime" + mmsi, dateTiming);
+
+                    ResetRealTimeData();
+                    RefreshRealTimeUI();
+                }
+            });
+        }
+
+        function StopTiming() {
+            $.messager.confirm('关闭累计', '确认关闭启动累计？', function (r) {
+                if (r) {
+                    if (EnsureMMSI() == false) return;
+                    var mmsi = parent.cur_mmsi;
+
+                    if (isTiming == true) {
+                        SaveTiming2Hist();
+                    }
+                    isTiming = false;
+                    delCookie("isTiming" + mmsi);
+                    ResetRealTimeUI();
+                }
+            });
+        }
+
+        function UpdateTiming() {
+            if (isTiming == false) return;
+
+            if (EnsureMMSI() == false) return;
+            var mmsi = parent.cur_mmsi;
+
+            var curTime = GetCurDateTimeString();
+            if (IsValidValue(timingStartTime) == false) {
+                timingEndTime = timingStartTime = curTime;
+                return;
+            }
+
+            var deltaMonth = GetDateDiff(
+            curTime,
+            timingStartTime,
+            "Month");
+
+            if (deltaMonth >= 3) {
+                $.messager.show({
+                    title: '时间限制(三个月以内)',
+                    msg: '时间查询范围在三个月以内',
+                    showType: 'show'
+                });
+                return;
+            }
+
+            timingEndTime = curTime;
+
+            $.ajax({
+                type: "get",
+                dataType: "json",
+                data: "mmsi=" + mmsi + "&btime=" + timingStartTime + "&etime=" + timingEndTime,
+                url: "ajax/shipoil_ajax.aspx?oper=getOilTimingStatistics",
+                error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
+                success: function (json) {
+                    var oilTimingStatInfo = json;
+                    if (oilTimingStatInfo.hasOwnProperty('datetiming') == false) {
+                        return;
+                    }
+                    var btmpTiming = new Date(oilTimingStatInfo.datetiming.replace(/-/g, "/"));
+                    var tmpDateTiming = new Date(dateTiming.replace(/-/g, "/"));
+                    if (btmpTiming.getTime() != tmpDateTiming.getTime()) {
+                        return;
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('oil_accu')) {
+                        if (oilTimingStatInfo.oil_accu != null) {
+                            oil_Accu = parseFloat(oilTimingStatInfo.oil_accu);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('oilcost_accu')) {
+                        if (oilTimingStatInfo.oilcost_accu != null) {
+                            oil_Accu_Cost = parseFloat(oilTimingStatInfo.oilcost_accu);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('mil_accu')) {
+                        if (oilTimingStatInfo.mil_accu != null) {
+                            mil_Accu = parseFloat(oilTimingStatInfo.mil_accu);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('oil_ex')) {
+                        if (oilTimingStatInfo.oil_ex != null) {
+                            oil_Ex = parseFloat(oilTimingStatInfo.oil_ex);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('oilcost_ex')) {
+                        if (oilTimingStatInfo.oilcost_ex != null) {
+                            oil_Ex_Cost = parseFloat(oilTimingStatInfo.oilcost_ex);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('oil_dyna')) {
+                        if (oilTimingStatInfo.oil_dyna != null) {
+                            oil_Dyna = parseFloat(oilTimingStatInfo.oil_dyna);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('oilcost_dyna')) {
+                        if (oilTimingStatInfo.oilcost_dyna != null) {
+                            oil_Dyna_Cost = parseFloat(oilTimingStatInfo.oilcost_dyna);
+                        }
+                    }
+
+
+                    if (oilTimingStatInfo.hasOwnProperty('mil_dyna')) {
+                        if (oilTimingStatInfo.mil_dyna != null) {
+                            mil_Dyna = parseFloat(oilTimingStatInfo.mil_dyna);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('sail_time')) {
+                        if (oilTimingStatInfo.sail_time != null) {
+                            sail_time = parseFloat(oilTimingStatInfo.sail_time);
+                        }
+                    }
+
+                    if (oilTimingStatInfo.hasOwnProperty('running_time')) {
+                        if (oilTimingStatInfo.running_time != null) {
+                            running_time = parseFloat(oilTimingStatInfo.running_time);
+                        }
+                    }
+
+                }
+            });
+
+            var oil_Total =
+            parseFloat(oil_Accu) + parseFloat(oil_Dyna) + parseFloat(oil_Ex);
+
+            var oil_Cost_Total =
+            parseFloat(oil_Accu_Cost) + parseFloat(oil_Dyna_Cost) + parseFloat(oil_Ex_Cost);
+
+            var mil_Total =
+            parseFloat(mil_Accu) + parseFloat(mil_Dyna);
+
+            refreshRealTimeUI();
+        }
 
     
     </script>
@@ -258,9 +434,9 @@
         <div class="ch_IOO">
             <div class="ch_but">
                 <a id="astop" class="easyui-linkbutton" href="javascript:void(0)" style="background-color: #60BB04;"
-                    plain="true" onclick="stopTotal();">&nbsp;清零计时&nbsp;</a> <a id="astart"
+                    plain="true" onclick="StopTiming();">&nbsp;清零计时&nbsp;</a> <a id="astart"
                         class="easyui-linkbutton" href="javascript:void(0)" style="background-color: #FFC600;"
-                        plain="true" onclick="startTotal();">&nbsp;启动计时&nbsp;</a>
+                        plain="true" onclick="StartTiming();">&nbsp;启动计时&nbsp;</a>
             </div>
         </div>
     </div>
