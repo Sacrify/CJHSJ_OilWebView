@@ -35,6 +35,7 @@
 
         var interval;
         var TIMER_DEF_INTERVAL = 20000;
+        var timingTimerCount = 0;
         var longTimerCount = 0;
 
         $(function () {
@@ -243,14 +244,14 @@
                     statWindow.getRealtimeStat();
                 }
 
-
-//                var rightHisStatWindow = document.getElementById("rightHisStaFrame").contentWindow;
-//                if (rightHisStatWindow) {
-//                    var timingStatWindow = rightHisStatWindow.document.getElementById("meterFrame").contentWindow;
-//                    if (timingStatWindow) {
-//                        timingStatWindow.updateStat();
-//                    }
-//                }
+                timingTimerCount++;
+                if (timingTimerCount >= 3) {
+                    timingTimerCount = 0;
+                    var timingWindow = document.getElementById("timingFrame").contentWindow;
+                    if (timingWindow) {
+                        timingWindow.UpdateTiming();
+                    }
+                }
 
 //                longTimerCount++;
 

@@ -187,8 +187,8 @@
                     setCookie("isTiming" + mmsi, "true");
 
                     //设置起时间
-                    timingEndTime = timingStartTime = (new Date()).format('yyyy-MM-dd hh:mm:ss');
-                    setCookie("sTime" + mmsi, dateTiming);
+                    timingEndTime = timingStartTime = GetCurDateTimeString();
+                    setCookie("sTime" + mmsi, timingStartTime);
 
                     ResetRealTimeData();
                     RefreshRealTimeUI();
@@ -237,7 +237,6 @@
                 });
                 return;
             }
-
             timingEndTime = curTime;
 
             $.ajax({
@@ -251,86 +250,79 @@
                     if (oilTimingStatInfo.hasOwnProperty('datetiming') == false) {
                         return;
                     }
-                    var btmpTiming = new Date(oilTimingStatInfo.datetiming.replace(/-/g, "/"));
-                    var tmpDateTiming = new Date(dateTiming.replace(/-/g, "/"));
-                    if (btmpTiming.getTime() != tmpDateTiming.getTime()) {
+
+                    if (ParseDateString(oilTimingStatInfo.datetiming).getTime() != 
+                        ParseDateString(timingStartTime).getTime()) {
                         return;
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('oil_accu')) {
                         if (oilTimingStatInfo.oil_accu != null) {
-                            oil_Accu = parseFloat(oilTimingStatInfo.oil_accu);
+                            oilAccu = parseFloat(oilTimingStatInfo.oil_accu);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('oilcost_accu')) {
                         if (oilTimingStatInfo.oilcost_accu != null) {
-                            oil_Accu_Cost = parseFloat(oilTimingStatInfo.oilcost_accu);
+                            oilAccuCost = parseFloat(oilTimingStatInfo.oilcost_accu);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('mil_accu')) {
                         if (oilTimingStatInfo.mil_accu != null) {
-                            mil_Accu = parseFloat(oilTimingStatInfo.mil_accu);
+                            milAccu = parseFloat(oilTimingStatInfo.mil_accu);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('oil_ex')) {
                         if (oilTimingStatInfo.oil_ex != null) {
-                            oil_Ex = parseFloat(oilTimingStatInfo.oil_ex);
+                            oilEx = parseFloat(oilTimingStatInfo.oil_ex);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('oilcost_ex')) {
                         if (oilTimingStatInfo.oilcost_ex != null) {
-                            oil_Ex_Cost = parseFloat(oilTimingStatInfo.oilcost_ex);
+                            oilExCost = parseFloat(oilTimingStatInfo.oilcost_ex);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('oil_dyna')) {
                         if (oilTimingStatInfo.oil_dyna != null) {
-                            oil_Dyna = parseFloat(oilTimingStatInfo.oil_dyna);
+                            oilDyna = parseFloat(oilTimingStatInfo.oil_dyna);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('oilcost_dyna')) {
                         if (oilTimingStatInfo.oilcost_dyna != null) {
-                            oil_Dyna_Cost = parseFloat(oilTimingStatInfo.oilcost_dyna);
+                            oilDynaCost = parseFloat(oilTimingStatInfo.oilcost_dyna);
                         }
                     }
 
 
                     if (oilTimingStatInfo.hasOwnProperty('mil_dyna')) {
                         if (oilTimingStatInfo.mil_dyna != null) {
-                            mil_Dyna = parseFloat(oilTimingStatInfo.mil_dyna);
+                            milDyna = parseFloat(oilTimingStatInfo.mil_dyna);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('sail_time')) {
                         if (oilTimingStatInfo.sail_time != null) {
-                            sail_time = parseFloat(oilTimingStatInfo.sail_time);
+                            sailTime = parseFloat(oilTimingStatInfo.sail_time);
                         }
                     }
 
                     if (oilTimingStatInfo.hasOwnProperty('running_time')) {
                         if (oilTimingStatInfo.running_time != null) {
-                            running_time = parseFloat(oilTimingStatInfo.running_time);
+                            runningTime = parseFloat(oilTimingStatInfo.running_time);
                         }
                     }
 
+                    oilTotal = parseFloat(oilAccu) + parseFloat(oilDyna) + parseFloat(oilEx);
+                    oilCostTotal = parseFloat(oilAccuCost) + parseFloat(oilDynaCost) + parseFloat(oilExCost);
+                    milTotal = parseFloat(milAccu) + parseFloat(milDyna);
+                    RefreshRealTimeUI();
                 }
             });
-
-            var oil_Total =
-            parseFloat(oil_Accu) + parseFloat(oil_Dyna) + parseFloat(oil_Ex);
-
-            var oil_Cost_Total =
-            parseFloat(oil_Accu_Cost) + parseFloat(oil_Dyna_Cost) + parseFloat(oil_Ex_Cost);
-
-            var mil_Total =
-            parseFloat(mil_Accu) + parseFloat(mil_Dyna);
-
-            refreshRealTimeUI();
         }
 
     
