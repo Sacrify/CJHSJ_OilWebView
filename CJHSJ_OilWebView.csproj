@@ -52,7 +52,9 @@
     <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Oil_History.aspx" />
     <Content Include="Oil_RealTime.aspx" />
+    <Content Include="Oil_Report.aspx" />
     <Content Include="Oil_Shippos.aspx" />
     <Content Include="Oil_Timing.aspx" />
     <Content Include="Scripts\global.js" />
@@ -643,6 +645,18 @@
     <Content Include="Scripts\jquery-easyui-1.4.1\themes\metro\tree.css" />
     <Content Include="Scripts\jquery-easyui-1.4.1\themes\metro\validatebox.css" />
     <Content Include="Scripts\jquery-easyui-1.4.1\themes\metro\window.css" />
+    <Content Include="Scripts\My97DatePicker\calendar.js" />
+    <Content Include="Scripts\My97DatePicker\lang\en.js" />
+    <Content Include="Scripts\My97DatePicker\lang\zh-cn.js" />
+    <Content Include="Scripts\My97DatePicker\lang\zh-tw.js" />
+    <Content Include="Scripts\My97DatePicker\skin\datePicker.gif" />
+    <Content Include="Scripts\My97DatePicker\skin\default\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\default\img.gif" />
+    <Content Include="Scripts\My97DatePicker\skin\WdatePicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\bg.jpg" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\img.gif" />
+    <Content Include="Scripts\My97DatePicker\WdatePicker.js" />
     <Content Include="shipoil_ajax.aspx" />
     <Content Include="shipoil_list.aspx" />
     <Content Include="Styles\global.css" />
@@ -669,12 +683,26 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Oil_History.aspx.cs">
+      <DependentUpon>Oil_History.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Oil_History.aspx.designer.cs">
+      <DependentUpon>Oil_History.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Oil_RealTime.aspx.cs">
       <DependentUpon>Oil_RealTime.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Oil_RealTime.aspx.designer.cs">
       <DependentUpon>Oil_RealTime.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Oil_Report.aspx.cs">
+      <DependentUpon>Oil_Report.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Oil_Report.aspx.designer.cs">
+      <DependentUpon>Oil_Report.aspx</DependentUpon>
     </Compile>
     <Compile Include="Oil_Shippos.aspx.cs">
       <DependentUpon>Oil_Shippos.aspx</DependentUpon>

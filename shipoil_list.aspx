@@ -299,9 +299,9 @@
                     <iframe width="100%" height="100%" id="timingFrame" scrolling="auto" frameborder="0"
                         src="Oil_Timing.aspx"></iframe>
                 </div>
-                <div region="center" title="累计油耗" split="true" style="height: 400px;" iconcls="icon-sum">
-<%--                    <iframe width="100%" height="100%" id="grapFrame" scrolling="auto" frameborder="0"
-                        src="Oil_rightAccumulationSta.aspx"></iframe>--%>
+                <div region="center" title="累计油耗" split="true" style="height: 400px;">
+                    <iframe width="100%" height="100%" id="historyFrame" scrolling="auto" frameborder="0"
+                        src="Oil_History.aspx"></iframe>
                 </div>
             </div>
         </div>
