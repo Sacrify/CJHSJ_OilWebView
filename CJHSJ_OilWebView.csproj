@@ -52,8 +52,10 @@
     <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Oil_Config.aspx" />
     <Content Include="Oil_History.aspx" />
     <Content Include="Oil_RealTime.aspx" />
+    <Content Include="Oil_Record.aspx" />
     <Content Include="Oil_Report.aspx" />
     <Content Include="Oil_Shippos.aspx" />
     <Content Include="Oil_Timing.aspx" />
@@ -683,6 +685,13 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Oil_Config.aspx.cs">
+      <DependentUpon>Oil_Config.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Oil_Config.aspx.designer.cs">
+      <DependentUpon>Oil_Config.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Oil_History.aspx.cs">
       <DependentUpon>Oil_History.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -696,6 +705,13 @@
     </Compile>
     <Compile Include="Oil_RealTime.aspx.designer.cs">
       <DependentUpon>Oil_RealTime.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Oil_Record.aspx.cs">
+      <DependentUpon>Oil_Record.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Oil_Record.aspx.designer.cs">
+      <DependentUpon>Oil_Record.aspx</DependentUpon>
     </Compile>
     <Compile Include="Oil_Report.aspx.cs">
       <DependentUpon>Oil_Report.aspx</DependentUpon>

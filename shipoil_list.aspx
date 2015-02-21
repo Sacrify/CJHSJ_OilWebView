@@ -299,23 +299,23 @@
                     <iframe width="100%" height="100%" id="timingFrame" scrolling="auto" frameborder="0"
                         src="Oil_Timing.aspx"></iframe>
                 </div>
-                <div region="center" title="累计油耗" split="true" style="height: 400px;">
+                <div region="center" title="累计油耗" split="true" style="height: 400px; overflow:hidden;">
                     <iframe width="100%" height="100%" id="historyFrame" scrolling="auto" frameborder="0"
                         src="Oil_History.aspx"></iframe>
                 </div>
             </div>
         </div>
-        <div title="历史报表">
-<%--        <iframe width="100%" height="100%" id="rightHisFrame" scrolling="no" frameborder="0"
-            src="Oil_rightHis.aspx"></iframe>--%>
+        <div title="历史报表" style="overflow:hidden;">
+            <iframe width="100%" height="100%" id="reportFrame" scrolling="auto" frameborder="0"
+                src="Oil_Report.aspx"></iframe>
         </div>
-        <div title="报警设置" iconCls="icon-edit">
-<%--        <iframe width="100%" height="100%" id="rightConfigFrame" scrolling="no" frameborder="0"
-            src="Oil_rightConfig.aspx"></iframe>--%>
+        <div title="报警设置" style="overflow:hidden;" iconcls="icon-edit">
+            <iframe width="100%" height="100%" id="configFrame" scrolling="auto" frameborder="0"
+                src="Oil_Config.aspx"></iframe>
         </div>
-        <div title="加油记录">
-<%--            <iframe width="100%" height="100%" id="rightOilFillFrame" scrolling="auto" frameborder="0"
-                src="Ship_OilFillRecords.aspx"></iframe>--%>
+        <div title="加油记录" style="overflow:hidden;">
+            <iframe width="100%" height="100%" id="recordFrame" scrolling="auto" frameborder="0"
+                src="Oil_Record.aspx"></iframe>
         </div>
     </div>
 </body>
