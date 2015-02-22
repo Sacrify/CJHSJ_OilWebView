@@ -16,7 +16,143 @@
     <link rel="Stylesheet" type="text/css" href="Styles/global.css" />
 
     <script type="text/javascript">
-    
+
+        $(function () {
+            UpdateHistory();
+        });
+
+        function UpdateHistory() {
+            UpdatePerUnit("yesterday");
+            UpdatePerUnit("today");
+            UpdatePerUnit("last_week");
+            UpdatePerUnit("this_week");
+            UpdatePerUnit("last_month");
+            UpdatePerUnit("this_month");
+            UpdatePerUnit("this_year");
+        }
+
+        function UpdatePerUnit(unit) {
+            if (
+            unit != "yesterday" &&
+            unit != "today" &&
+            unit != "last_week" &&
+            unit != "this_week" &&
+            unit != "last_month" &&
+            unit != "this_month" &&
+            unit != "this_year") {
+                return;
+            }
+
+            var mmsi = parent.cur_mmsi;
+            var timeName = "accu_time_" + unit;
+            var milName = "accu_" + unit + "_mil";
+            var sailTimeName = "accu_" + unit + "_sail_time";
+            var runningTimeName = "accu_" + unit + "_running_time";
+            var oilName = "accu_" + unit + "_oil";
+            var oilCostName = "accu_" + unit + "_oil_cost";
+
+            var btime = new Date();
+            var etime = new Date();
+
+            if (unit == "yesterday") {
+                btime.setHours(0, 0, 0, 0);
+                var btime_s = btime.getTime();
+
+                btime.setTime(btime_s - 1000 * 60 * 60 * 24);
+                etime.setTime(btime_s);
+
+                $("#" + timeName).html((btime.getMonth() + 1) + "-" + btime.getDate());
+            }
+
+            else if (unit == "today") {
+                btime.setHours(0, 0, 0, 0);
+                var btime_s = btime.getTime();
+
+                btime.setTime(btime_s);
+                etime.setTime(btime_s + 1000 * 60 * 60 * 24);
+
+                $("#" + timeName).html((btime.getMonth() + 1) + "-" + btime.getDate());
+            }
+            else if (unit == "last_week") {
+                btime.setHours(0, 0, 0, 0);
+                var btime_s = btime.getTime();
+
+                btime_s -= 1000 * 60 * 60 * 24 * btime.getDay();
+                btime.setTime(btime_s - 1000 * 60 * 60 * 24 * 7);
+                etime.setTime(btime_s);
+
+                $("#" + timeName).html(
+                (btime.getMonth() + 1) + "-" + btime.getDate() + "--" +
+                (etime.getMonth() + 1) + "-" + etime.getDate());
+            }
+            else if (unit == "this_week") {
+                btime.setHours(0, 0, 0, 0);
+                var btime_s = btime.getTime();
+
+                btime_s -= 1000 * 60 * 60 * 24 * btime.getDay()
+                btime.setTime(btime_s);
+                etime.setTime(btime_s + 1000 * 60 * 60 * 24 * 7);
+
+                $("#" + timeName).html(
+                (btime.getMonth() + 1) + "-" + btime.getDate() + "--" +
+                (etime.getMonth() + 1) + "-" + etime.getDate());
+            }
+            else if (unit == "last_month") {
+                btime.setHours(0, 0, 0, 0);
+                btime.setDate(1);
+                var btime_s = btime.getTime();
+                etime.setTime(btime_s);
+                btime.setTime(btime_s - 1000 * 60 * 60);
+                btime.setDate(1);
+                btime.setHours(0, 0, 0, 0);
+
+                $("#" + timeName).html(
+                (btime.getMonth() + 1) + "-" + btime.getDate() + "--" +
+                (etime.getMonth() + 1) + "-" + etime.getDate());
+            }
+            else if (unit == "this_month") {
+                btime.setHours(0, 0, 0, 0);
+                btime.setDate(1);
+
+                var btime_s = btime.getTime();
+                etime.setTime(btime_s + 1000 * 60 * 60 * 24 * 31);
+                etime.setDate(1);
+
+                $("#" + timeName).html(
+                (btime.getMonth() + 1) + "-" + btime.getDate() + "--" +
+                (etime.getMonth() + 1) + "-" + etime.getDate());
+            }
+            else if (unit == "this_year") {
+                var bYear = btime.getYear();
+                btime.setFullYear(bYear, 0, 1);
+                btime.setHours(0, 0, 0, 0);
+
+                etime.setFullYear(bYear + 1, 0, 1);
+                etime.setHours(0, 0, 0, 0);
+
+                $("#" + timeName).html(btime.getYear() + "年");
+            }
+
+            if (mmsi != "" && mmsi != "undefine") {
+                $.ajax({
+                    type: "get",
+                    dataType: "json",
+                    data: "mmsi=" + mmsi + "&btime=" + GetDateTimeString(btime) + "&etime=" + GetDateTimeString(etime),
+                    url: "shipoil_ajax.aspx?oper=getOilHistoryStatistics",
+                    error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
+                    success: function (json) {
+                        if (json) {
+
+                            $("#" + milName).html(OilHelper_GetMil(json));
+                            $("#" + sailTimeName).html(OilHelper_GetSailTime(json));
+                            $("#" + runningTimeName).html(OilHelper_GetRunningTime(json));
+                            $("#" + oilName).html(OilHelper_GetOil(json));
+                            $("#" + oilCostName).html(OilHelper_GetOilCost(json));
+                        }
+                    }
+                });
+            }
+        }
     </script>
 
 </head>

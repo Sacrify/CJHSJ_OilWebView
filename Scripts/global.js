@@ -35,8 +35,8 @@ function delCookie(name) {
         document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString();
 }
 
-function curDateTime() {
-    var d = new Date();
+function GetDateTimeString(date) {
+    var d = date;
     var year = d.getFullYear();
     var month = d.getMonth() + 1;
     var date = d.getDate();
@@ -70,7 +70,7 @@ function curDateTime() {
 }
 
 function GetCurDateTimeString() {
-    return (new Date()).format('yyyy-MM-dd hh:mm:ss');
+    return GetDateTimeString(new Date());
 }
 
 function IsValidValue(val) {

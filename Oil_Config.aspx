@@ -16,6 +16,14 @@
     <link rel="Stylesheet" type="text/css" href="Scripts/jquery-easyui-1.4.1/themes/icon.css" />
     <link rel="Stylesheet" type="text/css" href="Styles/global.css" />
 
+    <script type="text/javascript">
+        
+        function UpdateConfigUI() {
+            
+        }
+
+    </script>
+
 </head>
 <body>
     <div class="ch_all" style="color: #FFF;">

@@ -201,6 +201,11 @@ namespace CJHSJ_OilWebView
                     getOilTimingStatistics();
                     break;
 
+                case "getOilHistoryStatistics":
+                    getShipOilInfo();
+                    getOilHistoryStatistics();
+                    break;
+
                 default:
                     break;
             }
@@ -1430,6 +1435,28 @@ namespace CJHSJ_OilWebView
                 si.oilcost_ex = (oilcost_ex_accu + running_time_dyna * oilExKgPerHour * oilPrice_dync).ToString();
 
                 dtHelp.ResutJsonStr((Object)si);
+            }
+            else
+            {
+                this._response = JsonResult(0, "未查找到数据");
+            }
+        }
+
+        /// <summary>
+        /// return oil history statistics
+        /// </summary>
+        private void getOilHistoryStatistics()
+        {
+            btime = QueryString("btime");
+            etime = QueryString("etime");
+
+            OilHis si = getShipAccTotal(btime, etime);
+
+            //输出返回
+            if (si != null)
+            {
+               dtHelp.ResutJsonStr((Object)si);
+                //WriteLocalLog("getOilHistoryStatistics" + Cxw.Utils.dtHelp.ToJson((Object)si));
             }
             else
             {

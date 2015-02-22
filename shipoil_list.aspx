@@ -167,7 +167,7 @@
         }
 
         function SetConfigValues2UI() {
-            var rightConfigWindow = document.getElementById("rightConfigFrame").contentWindow;
+            var rightConfigWindow = document.getElementById("configFrame").contentWindow;
             if (rightConfigWindow) {
                 rightConfigWindow.UpdateConfigUI();
             }
