@@ -675,7 +675,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\HSJ_OilFillRecord.cs" />
+    <Compile Include="Entity\HSJ_OilFillRecordMonth.cs" />
     <Compile Include="Entity\HSJ_OilPrice.cs" />
+    <Compile Include="Entity\HSJ_OilSaveRecordYear.cs" />
     <Compile Include="Entity\OilHis.cs" />
     <Compile Include="Entity\RealtimeInfo.cs" />
     <Compile Include="Entity\ShipConfig.cs" />
