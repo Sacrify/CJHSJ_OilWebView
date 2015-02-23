@@ -17,11 +17,202 @@
     <link rel="Stylesheet" type="text/css" href="Styles/global.css" />
 
     <script type="text/javascript">
-        
+
+        var preRowStr = null;
+
         function UpdateConfigUI() {
-            
+            $("#seasonSet").combobox({
+                valueField: 'id',
+                textField: 'text',
+                data: [{
+                    id: '夏季',
+                    text: '夏季'
+                }, {
+                    id: '冬季',
+                    text: '冬季'
+                }],
+                readonly: true,
+                onChange: function (newValue, oldValue) {
+
+                    if (oldValue == '夏季') {
+                        parent.oil_density_summer = ensurePositive(document.getElementById("oil_density").value);
+                    }
+                    else if (oldValue == '冬季') {
+                        parent.oil_density_winter = ensurePositive(document.getElementById("oil_density").value);
+                    }
+
+                    if (newValue == '夏季') {
+                        document.getElementById("oil_density").value = parent.getOilDensitySummer();
+                    }
+                    else if (newValue == '冬季') {
+                        document.getElementById("oil_density").value = parent.getOilDensityWinter();
+                    }
+                }
+            });
+
+            document.getElementById("llun_rps_warning").value = parent.getWarningLlun();
+            document.getElementById("lmain_oil_gps_warning").value = parent.getWarningLoil();
+            document.getElementById("speed_warning").value = parent.getWarningSpeed();
+            document.getElementById("ljyh_warning").value = parent.getWarningMoil();
+            document.getElementById("rlun_rps_warning").value = parent.getWarningRlun();
+            document.getElementById("rmain_oil_gps_warning").value = parent.getWarningRoil();
+
+            if (parent.getOilType() == 0) {
+                document.getElementById("oilTypeSet").value = "0号柴油";
+            }
+            else if (parent.getOilType() == 1) {
+                document.getElementById("oilTypeSet").value = "4号柴油";
+            }
+
+            if (parent.getOilSeason() == 0) {
+                $('#seasonSet').combobox('select', '夏季');
+                document.getElementById("oil_density").value = parent.getOilDensitySummer();
+            }
+            else if (parent.getOilSeason() == 1) {
+                $('#seasonSet').combobox('select', '冬季');
+                document.getElementById("oil_density").value = parent.getOilDensityWinter();
+            }
         }
 
+        function SaveConfig() {
+            var mmsi = parent.cur_mmsi;
+            if (IsValidValue(mmsi) == false) {
+                $.messager.show({
+                    title: '请选择船只',
+                    msg: '请先选择需要计时的船只',
+                    showType: 'show'
+                });
+                return;
+            }
+
+            parent.warning_llun = document.getElementById("llun_rps_warning").value;
+            parent.warning_loil = document.getElementById("lmain_oil_gps_warning").value;
+            parent.warning_speed = document.getElementById("speed_warning").value;
+            parent.warning_moil = document.getElementById("ljyh_warning").value;
+            parent.warning_rlun = document.getElementById("rlun_rps_warning").value;
+            parent.warning_roil = document.getElementById("rmain_oil_gps_warning").value;
+
+            if ($('#seasonSet').combo('getText') == '夏季') {
+                parent.oil_season = 0;
+            }
+            else if ($('#seasonSet').combo('getText') == '冬季') {
+                parent.oil_season = 1;
+            }
+
+            if (parent.oil_season == 0) {
+                parent.oil_density_summer = ensurePositive(document.getElementById("oil_density").value);
+            }
+            else if (parent.oil_season == 1) {
+                parent.oil_density_winter = ensurePositive(document.getElementById("oil_density").value);
+            }
+
+            parent.SetShipConfig();
+        }
+
+
+        function ShowOilPrices() {
+
+            $('#price_oil_type').html(parent.getOilTypeString());
+
+            if (preRowStr == null) {
+                var rowStr;
+
+                rowStr += "<tr>";
+                rowStr += "<td colspan='2'>";
+                rowStr += "加载中请稍等";
+                rowStr += "</td>";
+                rowStr += "</tr>";
+
+                preRowStr = $(rowStr).insertAfter($("#price_table_head"));
+            }
+
+            $.ajax({
+                type: "get",
+                dataType: "json",
+                data: "oilType=" + parent.getOilType(),
+                url: "ajax/shipoil_ajax.aspx?oper=getOilPrices",
+                error: function (XmlHttpRequest, textStatus, errorThrown) {
+                    Cxw.Loading.hide();
+                    alert(XmlHttpRequest.responseText);
+
+                    var rowStrError;
+                    rowStrError += "<tr>";
+                    rowStrError += "<td colspan='2'>";
+                    rowStrError += "无法取得油价信息";
+                    rowStrError += "</td>";
+                    rowStrError += "</tr>";
+
+                    if (preRowStr != null) {
+                        preRowStr.remove();
+                        preRowStr = null;
+                    }
+                    preRowStr = $(rowStrError).insertAfter($("#price_table_head"));
+                },
+                success: function (json) {
+                    if (json) {
+
+                        if ((json == undefined || json == null || json == '') ||
+                        (json != undefined && json != null && json != '' && eval(json).length == 0)) {
+
+                            var rowStrNone;
+
+                            rowStrNone += "<tr>";
+                            rowStrNone += "<td colspan='2'>";
+                            rowStrNone += "暂无油价数据";
+                            rowStrNone += "</td>";
+                            rowStrNone += "</tr>";
+
+                            if (preRowStr != null) {
+                                preRowStr.remove();
+                                preRowStr = null;
+                            }
+
+                            preRowStr = $(rowStrNone).insertAfter($("#price_table_head"));
+
+                        }
+                        else {
+
+                            var jsondata = eval(json); // convert json data
+                            var rowStrPrice;
+
+                            for (var i = 0; i < jsondata.length; i++) {
+
+                                rowStrPrice += "<tr>";
+
+                                rowStrPrice += "<td>";
+                                var btime = OilHelper_GetPriceBTimeString(jsondata[i]);
+                                rowStrPrice += btime.substr(0, btime.lastIndexOf(' '));
+                                rowStrPrice += "</td>";
+
+                                rowStrPrice += "<td>";
+                                rowStrPrice += OilHelper_GetOilPrice(jsondata[i]);
+                                rowStrPrice += "</td>";
+
+                                rowStrPrice += "</tr>";
+                            }
+
+                            if (preRowStr != null) {
+                                preRowStr.remove();
+                                preRowStr = null;
+                            }
+
+                            preRowStr = $(rowStrPrice).insertAfter($("#price_table_head"));
+                        }
+                    }
+                }
+            });
+
+            $("#price_dlg").show();
+
+            $("#price_dlg").dialog({
+                width: 400,
+                height: 300,
+                modal: false,
+                title: '参考油价',
+                minimizable: false,
+                maximizable: false
+            });
+        }
     </script>
 
 </head>

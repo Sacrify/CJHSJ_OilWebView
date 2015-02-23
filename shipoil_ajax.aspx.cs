@@ -196,6 +196,10 @@ namespace CJHSJ_OilWebView
                     getShipConfig();
                     break;
 
+                case "setShipConfig":
+                    setShipConfig();
+                    break;
+
                 case "getOilTimingStatistics":
                     getShipOilInfo();
                     getOilTimingStatistics();
