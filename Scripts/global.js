@@ -44,23 +44,29 @@ function GetDateTimeString(date) {
     var Hours = d.getHours(); //获取当前小时数(0-23)
     var Minutes = d.getMinutes(); //获取当前分钟数(0-59)
     var Seconds = d.getSeconds(); //获取当前秒数(0-59)
+    
     var curDateTime = year;
+
     if (month > 9)
         curDateTime = curDateTime + "-" + month;
     else
         curDateTime = curDateTime + "-" + "0" + month;
+
     if (date > 9)
         curDateTime = curDateTime + "-" + date;
     else
-        curDateTime = curDateTime + "-" + "0" + date + " ";
+        curDateTime = curDateTime + "-" + "0" + date;
+
     if (Hours > 9)
         curDateTime = curDateTime + " " + Hours;
     else
         curDateTime = curDateTime + " " + "0" + Hours;
+    
     if (Minutes > 9)
         curDateTime = curDateTime + ":" + Minutes;
     else
         curDateTime = curDateTime + ":" + "0" + Minutes;
+    
     if (Seconds > 9)
         curDateTime = curDateTime + ":" + Seconds;
     else
@@ -69,8 +75,84 @@ function GetDateTimeString(date) {
     return curDateTime;
 }
 
+function GetDateString(date) {
+    var d = date;
+    var year = d.getFullYear();
+    var month = d.getMonth() + 1;
+    var date = d.getDate();
+
+    var curDate = year;
+    if (month > 9)
+        curDate = curDate + "-" + month;
+    else
+        curDate = curDate + "-" + "0" + month;
+
+    if (date > 9)
+        curDate = curDate + "-" + date;
+    else
+        curDate = curDate + "-" + "0" + date + " ";
+
+    return curDate;
+}
+
+function GetDateLocalString(date) {
+    var d = date;
+    var year = d.getFullYear();
+    var month = d.getMonth() + 1;
+    var date = d.getDate();
+
+    var curDate = year + "年";
+
+    if (month > 9)
+        curDate = curDate + month;
+    else
+        curDate = curDate + "0" + month;
+    curDate = curDate + "月";
+
+    if (date > 9)
+        curDate = curDate + date;
+    else
+        curDate = curDate + "0" + date;
+    curDate = curDate + "日";
+
+    return curDate;
+}
+
+function GetDateWithMonthAndDayLocalString(date) {
+    var d = date;
+    var year = d.getFullYear();
+    var month = d.getMonth() + 1;
+    var date = d.getDate();
+
+    if (month > 9)
+        curDate = month;
+    else
+        curDate = "0" + month;
+    curDate = curDate + "月";
+
+    if (date > 9)
+        curDate = curDate + date;
+    else
+        curDate = curDate + "0" + date;
+    curDate = curDate + "日";
+
+    return curDate;
+}
+
 function GetCurDateTimeString() {
     return GetDateTimeString(new Date());
+}
+
+function GetCurDateString() {
+    return GetDateString(new Date());
+}
+
+function GetCurDateLocalString() {
+    return GetDateLocalString(new Date());
+}
+
+function GetCurDateWithMonthAndDayLocalString() {
+    return GetDateWithMonthAndDayLocalString(new Date());
 }
 
 function IsValidValue(val) {

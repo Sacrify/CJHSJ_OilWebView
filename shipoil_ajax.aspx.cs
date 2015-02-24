@@ -210,6 +210,22 @@ namespace CJHSJ_OilWebView
                     getOilHistoryStatistics();
                     break;
 
+                case "getOilSaveYearRecord":
+                    getOilSaveYearRecord();
+                    break;
+                case "getOilFillYearRecords":
+                    getOilFillYearRecords();
+                    break;
+                case "getOilFillMonthRecord":
+                    getOilFillMonthRecord();
+                    break;
+                case "getOilFillRecords":
+                    getOilFillRecords();
+                    break;
+                case "updateOilFillRecords":
+                    updateOilFillRecords();
+                    break;
+
                 default:
                     break;
             }
@@ -1235,7 +1251,7 @@ namespace CJHSJ_OilWebView
                 if (config != null)
                 {
                     dtHelp.ResutJsonStr((Object)config);
-                    //WriteLocalLog(Cxw.Utils.dtHelp.ToJson((Object)config));
+                    //WriteLocalLog(dtHelp.ToJson((Object)config));
                 }
                 else
                 {
@@ -1460,12 +1476,705 @@ namespace CJHSJ_OilWebView
             if (si != null)
             {
                dtHelp.ResutJsonStr((Object)si);
-                //WriteLocalLog("getOilHistoryStatistics" + Cxw.Utils.dtHelp.ToJson((Object)si));
+                //WriteLocalLog("getOilHistoryStatistics" + dtHelp.ToJson((Object)si));
             }
             else
             {
                 this._response = JsonResult(0, "未查找到数据");
             }
         }
+
+
+        /// <summary>
+        /// return oil save year record
+        /// </summary>
+        public void getOilSaveYearRecord()
+        {
+            DateTime fillMonth = DateTime.Now;
+            if (DateTime.TryParse(q("fill_month"), out fillMonth) == false)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+                return;
+            }
+
+            HSJ_OilSaveRecordYear saveRecord =
+                getOilSaveYearRecord(fillMonth.AddYears(-1));
+            if (saveRecord == null)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+                return;
+            }
+            else
+            {
+                dtHelp.ResutJsonStr((Object)saveRecord);
+            }
+        }
+
+        /// <summary>
+        /// return oil save year record by given time
+        /// </summary>
+        /// <param name="stime"></param>
+        /// <returns></returns>
+        private HSJ_OilSaveRecordYear getOilSaveYearRecord(DateTime stime)
+        {
+            DateTime btime = new DateTime(stime.Year, 1, 1);
+            dohOil.Reset();
+            dohOil.SqlCmd =
+                "SELECT TOP 1 * " +
+                "FROM hsj_oil_save_record_year " +
+                "WHERE OilSaveYear = ' " + btime.ToString("yyyy-MM-dd") + "' " +
+                "AND mmsi = '" + mmsi + "' ";
+            DataTable dt = dohOil.GetDataTable();
+
+            if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
+            {
+                HSJ_OilSaveRecordYear saveRecord = new HSJ_OilSaveRecordYear();
+
+                saveRecord.OilYearSaveID = dt.Rows[0]["OilSaveYearID"].ToString();
+                saveRecord.OilYearSaveDate = dt.Rows[0]["OilSaveYear"].ToString();
+                saveRecord.OilYearSaveMMSI = dt.Rows[0]["mmsi"].ToString();
+                saveRecord.OilYearSaveAmount = dt.Rows[0]["OilSaveAmount"].ToString();
+
+                return saveRecord;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// return oil fill month record
+        /// </summary>
+        public void getOilFillMonthRecord()
+        {
+            DateTime fillMonth = DateTime.Now;
+            if (DateTime.TryParse(QueryString("fill_month"), out fillMonth) == false)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+                return;
+            }
+
+            HSJ_OilFillRecordMonth record = getOilFillMonthRecord(fillMonth);
+            if (record == null)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+            }
+            else
+            {
+                dtHelp.ResutJsonStr((Object)record);
+            }
+        }
+
+        /// <summary>
+        /// return oil fill year records
+        /// </summary>
+        public void getOilFillYearRecords()
+        {
+            DateTime fillMonth = DateTime.Now;
+            if (DateTime.TryParse(QueryString("fill_month"), out fillMonth) == false)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+                return;
+            }
+
+            List<HSJ_OilFillRecordMonth> records = getOilFillYearRecords(fillMonth);
+            if (records == null)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+            }
+            else
+            {
+                WriteLocalLog(dtHelp.ToJson((Object)records));
+                dtHelp.ResutJsonStr((Object)records);
+            }
+        }
+
+        /// <summary>
+        /// return oil fill year records by given time
+        /// </summary>
+        /// <param name="stime"></param>
+        /// <param name="includeOilConsume"></param>
+        /// <returns></returns>
+        public List<HSJ_OilFillRecordMonth> getOilFillYearRecords(DateTime stime, bool includeOilConsume = true)
+        {
+            List<HSJ_OilFillRecordMonth> records = null;
+            for (int i = 1; i <= 12; i++)
+            {
+                DateTime btime = new DateTime(stime.Year, i, 1);
+                HSJ_OilFillRecordMonth record = getOilFillMonthRecord(btime, includeOilConsume);
+                if (record != null)
+                {
+                    if (records == null)
+                    {
+                        records = new List<HSJ_OilFillRecordMonth>();
+                    }
+                    records.Add(record);
+                }
+            }
+
+            return records;
+        }
+
+        /// <summary>
+        /// return oil fill records by given time
+        /// </summary>
+        /// <param name="stime"></param>
+        /// <param name="includeOilConsume"></param>
+        /// <returns></returns>
+        private HSJ_OilFillRecordMonth getOilFillMonthRecord(DateTime stime, bool includeOilConsume = true)
+        {
+            if ((mmsi == null) ||
+               (mmsi != null && mmsi.Length <= 0))
+            {
+                return null;
+            }
+
+            DateTime btime = new DateTime(stime.Year, stime.Month, 1);
+            DateTime etime = btime.AddMonths(1);
+
+            dohOil.Reset();
+            dohOil.SqlCmd =
+                "SELECT TOP 1 * " +
+                "FROM hsj_oil_fill_record_month " +
+                "WHERE " +
+                "mmsi = '" + mmsi + "' " +
+                "AND " +
+                "OilFillMonth = '" + btime.ToString("yyyy-MM-dd") + "' ";
+
+            DataTable dt = dohOil.GetDataTable();
+            if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
+            {
+                HSJ_OilFillRecordMonth fillRecordMonth = new HSJ_OilFillRecordMonth();
+                fillRecordMonth.OilMonthFillID = dt.Rows[0]["OilFillMonthID"].ToString();
+                fillRecordMonth.OilMonthFillMMSI = mmsi;
+                fillRecordMonth.OilMonthFillDate = btime.ToString("yyyy-MM-dd");
+                fillRecordMonth.OilMonthFillAmount = dt.Rows[0]["OilFillAmount"].ToString();
+
+                double oil = 0, oilex = 0;
+                if (includeOilConsume)
+                {
+                    OilHis si = getShipAccTotal(btime.ToString("yyyy-MM-dd"), etime.ToString("yyyy-MM-dd"), true, true);
+                    double.TryParse(si.oil, out oil);
+                    double.TryParse(si.oil_ex, out oilex);
+                }
+
+                fillRecordMonth.OilMonthConsumeAmount = (oil + oilex).ToString();
+
+                return fillRecordMonth;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// return oil fill records by fill month
+        /// </summary>
+        public void getOilFillRecords()
+        {
+            DateTime fillMonth = DateTime.Now;
+            //WriteLocalLog(q("fill_month"));
+            if (DateTime.TryParse(QueryString("fill_month"), out fillMonth) == false)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+                return;
+            }
+
+            List<Entity.HSJ_OilFillRecord> records = getOilFillRecords(fillMonth);
+            if (records == null)
+            {
+                this._response = JsonResult(0, "未查找到数据");
+            }
+            else
+            {
+                //WriteLocalLog("getOilFillRecords for " + q("fill_month") + " : " + "Count: " + records.Count.ToString());
+                //for (int i = 0; i < records.Count; i++)
+                //{
+                //    WriteLocalLog(dtHelp.ToJson((Object)records[i]));
+                //}
+                dtHelp.ResutJsonStr((Object)records);
+            }
+        }
+
+        /// <summary>
+        /// return oil fill records by given time
+        /// </summary>
+        /// <param name="stime"></param>
+        /// <returns></returns>
+        private List<Entity.HSJ_OilFillRecord> getOilFillRecords(DateTime stime)
+        {
+            if ((mmsi == null) || (mmsi != null && mmsi.Length <= 0))
+            {
+                return null;
+            }
+
+            DateTime btime = new DateTime(stime.Year, stime.Month, 1);
+            DateTime etime = btime.AddMonths(1);
+
+            dohOil.Reset();
+            dohOil.SqlCmd =
+                "SELECT * " +
+                "FROM hsj_oil_fill_record " +
+                "WHERE " +
+                "mmsi = '" + mmsi + "' " +
+                "AND " +
+                "( " +
+                "OilFillDate >= '" + btime.ToString("yyyy-MM-dd") + "' " +
+                "AND " +
+                "OilFillDate < '" + etime.ToString("yyyy-MM-dd") + "' " +
+                ") ";
+            //WriteLocalLog(dohOil.SqlCmd);
+
+            DataTable dt = dohOil.GetDataTable();
+
+            if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
+            {
+                List<Entity.HSJ_OilFillRecord> records = new List<HSJ_OilFillRecord>();
+
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    Entity.HSJ_OilFillRecord record = new HSJ_OilFillRecord();
+
+                    record.OilFillID = dt.Rows[i]["OilFillID"].ToString();
+                    record.OilFillMMSI = mmsi;
+                    record.OilFillDate = dt.Rows[i]["OilFillDate"].ToString();
+                    record.OilFillAmount = dt.Rows[i]["OilFillAmount"].ToString();
+
+                    records.Add(record);
+                }
+
+                return records;
+            }
+
+            return null;
+        }
+
+        [DataContract]
+        class JSOilFillRecord
+        {
+            [DataMember]
+            public string fillID { get; set; }
+
+            [DataMember]
+            public string fillDate { get; set; }
+
+            [DataMember]
+            public string fillAmount { get; set; }
+        }
+
+        /// <summary>
+        /// JS oil fill record deserialize
+        /// </summary>
+        /// <param name="jsonString"></param>
+        /// <returns></returns>
+        private List<JSOilFillRecord> JSOilFillRecordDeserialize(string jsonString)
+        {
+            List<JSOilFillRecord> list = null;
+            var jser = new JavaScriptSerializer();
+
+            try
+            {
+                list = jser.Deserialize<List<JSOilFillRecord>>(jsonString);
+            }
+            catch (Exception e)
+            {
+                //WriteLocalLog("JsonDeserialize" + e.ToString());
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// delete oil fill records list
+        /// </summary>
+        /// <param name="list"></param>
+        private void deleteOilFillRecordsList(List<JSOilFillRecord> list)
+        {
+            if (list == null) return;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                JSOilFillRecord record = list[i];
+                if (string.IsNullOrEmpty(record.fillID))
+                {
+                    continue;
+                }
+                if (record == null) continue;
+
+                dohOil.Reset();
+                dohOil.SqlCmd =
+                    "DELETE " +
+                    "FROM hsj_oil_fill_record " +
+                    "WHERE OilFillID=" + record.fillID;
+                dohOil.ExecuteSqlNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// add oil fill records
+        /// </summary>
+        /// <param name="list"></param>
+        private void addOilFillRecordsList(List<JSOilFillRecord> list)
+        {
+            if (list == null) return;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                JSOilFillRecord record = list[i];
+
+                if (record == null) continue;
+                if (string.IsNullOrEmpty(record.fillDate) || string.IsNullOrEmpty(record.fillAmount))
+                {
+                    continue;
+                }
+
+                dohOil.Reset();
+                dohOil.SqlCmd =
+                    "INSERT " +
+                    "INTO hsj_oil_fill_record(OilFillDate, mmsi, OilFillAmount) " +
+                    "VALUES ( " + "'" + record.fillDate + "', " +
+                    "'" + mmsi + "', " +
+                    record.fillAmount + ")";
+                dohOil.ExecuteSqlNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// update oil fill records
+        /// </summary>
+        /// <param name="list"></param>
+        private void updateOilFillRecordsList(List<JSOilFillRecord> list)
+        {
+            if (list == null) return;
+
+            List<JSOilFillRecord> listToAdd = null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                JSOilFillRecord record = list[i];
+
+                if (record == null) continue;
+                if (string.IsNullOrEmpty(record.fillDate) || string.IsNullOrEmpty(record.fillAmount))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(record.fillID))
+                {
+                    if (listToAdd == null) listToAdd = new List<JSOilFillRecord>();
+                    if (listToAdd != null) listToAdd.Add(record);
+                }
+                else
+                {
+                    dohOil.Reset();
+                    dohOil.SqlCmd =
+                        "UPDATE hsj_oil_fill_record " +
+                        "SET " +
+                        "OilFillDate='" + record.fillDate + "', " +
+                        "OilFillAmount=" + record.fillAmount +
+                        "WHERE " +
+                        "OilFillID=" + record.fillID;
+                    dohOil.ExecuteSqlNonQuery();
+                }
+            }
+
+            if (listToAdd != null) addOilFillRecordsList(listToAdd);
+        }
+
+        /// <summary>
+        /// update oil fill month record by given time
+        /// </summary>
+        /// <param name="stime"></param>
+        private void updateOilFillMonthRecord(DateTime stime)
+        {
+            if ((mmsi == null) || (mmsi != null && mmsi.Length <= 0))
+            {
+                return;
+            }
+
+            DateTime btime = new DateTime(stime.Year, stime.Month, 1);
+            DateTime etime = btime.AddMonths(1);
+
+            dohOil.Reset();
+            dohOil.SqlCmd =
+                "SELECT SUM(OilFillAmount) AS oilFillAmountMonth " +
+                "FROM hsj_oil_fill_record " +
+                "WHERE (OilFillDate >= '" + btime.ToString("yyyy-MM-dd") +
+                "' AND OilFillDate < '" + etime.ToString("yyyy-MM-dd") + "') " +
+                "AND mmsi = '" + mmsi + "'";
+            DataTable dt = dohOil.GetDataTable();
+
+            if (dt == null || dt.Rows == null || dt.Rows.Count <= 0)
+            {
+                return;
+            }
+
+            double sumOil = 0;
+            if (double.TryParse(dt.Rows[0]["oilFillAmountMonth"].ToString(), out sumOil) == false)
+            {
+                return;
+            }
+
+            bool bNewMonthRecord = true;
+            dohOil.Reset();
+            dohOil.SqlCmd =
+                "SELECT TOP 1 * " +
+                "FROM hsj_oil_fill_record_month " +
+                "WHERE OilFillMonth = '" + btime.ToString("yyyy-MM-dd") + "' " +
+                "AND mmsi = '" + mmsi + "'";
+            dt = dohOil.GetDataTable();
+            if (dt == null || dt.Rows == null || dt.Rows.Count <= 0) bNewMonthRecord = true;
+            else bNewMonthRecord = false;
+
+            dohOil.Reset();
+            if (bNewMonthRecord)
+            {
+                dohOil.SqlCmd =
+                    "INSERT INTO hsj_oil_fill_record_month(OilFillMonth, mmsi, OilFillAmount) " +
+                    "VALUES ('" + btime.ToString("yyyy-MM-dd") + "', '" + mmsi + "', " + sumOil.ToString() + ")";
+            }
+            else
+            {
+                dohOil.SqlCmd =
+                    "UPDATE hsj_oil_fill_record_month " +
+                    "SET " +
+                    "OilFillAmount = " + sumOil.ToString() +
+                    "WHERE " +
+                    "OilFillMonth = '" + btime.ToString("yyyy-MM-dd") + "' " +
+                    "AND " +
+                    "mmsi = '" + mmsi + "' ";
+            }
+            dohOil.ExecuteSqlNonQuery();
+        }
+
+        /// <summary>
+        /// update oil fill records
+        /// </summary>
+        public void updateOilFillRecords()
+        {
+            string deleted = QueryString("deleted");
+            string inserted = QueryString("inserted");
+            string updated = QueryString("updated");
+
+            //WriteLocalLog("updateOilFillRecords(): \n" +
+            //    "deleted: " + deleted + "\n" + 
+            //    "inserted: " + inserted + "\n" + 
+            //    "updated: " + updated);
+
+            List<JSOilFillRecord> listDeleted = null;
+            List<JSOilFillRecord> listInserted = null;
+            List<JSOilFillRecord> listUpdated = null;
+
+            if (string.IsNullOrEmpty(deleted) == false)
+            {
+                listDeleted = JSOilFillRecordDeserialize(deleted);
+            }
+
+            if (string.IsNullOrEmpty(inserted) == false)
+            {
+                listInserted = JSOilFillRecordDeserialize(inserted);
+            }
+
+            if (string.IsNullOrEmpty(updated) == false)
+            {
+                listUpdated = JSOilFillRecordDeserialize(updated);
+            }
+
+            if (listDeleted != null)
+            {
+                deleteOilFillRecordsList(listDeleted);
+            }
+
+            if (listInserted != null)
+            {
+                addOilFillRecordsList(listInserted);
+            }
+
+            if (listUpdated != null)
+            {
+                updateOilFillRecordsList(listUpdated);
+            }
+
+            string fillMonth = QueryString("fill_month");
+            DateTime fillDateTime = DateTime.Now;
+            if (DateTime.TryParse(fillMonth, out fillDateTime) == true)
+            {
+                updateOilFillMonthRecord(fillDateTime);
+            }
+        }
+
+        /// <summary>
+        /// return month count from stime to etime
+        /// </summary>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <returns></returns>
+        public int GetMonthCount(DateTime stime, DateTime etime)
+        {
+            return (etime.Year - stime.Year) * 12 +
+                etime.Month - stime.Month + 1;
+        }
+
+        class OilMonthSaveRecord
+        {
+            public int saveID { get; set; }
+            public DateTime saveDate { get; set; }
+            public double saveAmount { get; set; }
+
+            public double lastMonthOilSave { get; set; }
+            public double oilFillAmount { get; set; }
+            public double oilConsumeAmount { get; set; }
+            public List<DateTime> oilFillDates { get; set; }
+
+            public string getOilFillDates()
+            {
+                string oilFillDatesString = string.Empty;
+
+                for (int i = 0; (oilFillDates != null && i < oilFillDates.Count); i++)
+                {
+                    oilFillDatesString += oilFillDates[i].ToString("yyyy-MM-dd; ");
+                }
+
+                if (string.IsNullOrEmpty(oilFillDatesString) == false)
+                {
+                    oilFillDatesString = oilFillDatesString.Substring(0, oilFillDatesString.Length - 2);
+                }
+
+                return string.IsNullOrEmpty(oilFillDatesString) ? "0" : oilFillDatesString;
+            }
+        }
+
+        /// <summary>
+        /// get oil fill dates
+        /// </summary>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <returns></returns>
+        private List<DateTime> GetOilFillDates(DateTime stime, DateTime etime)
+        {
+            List<DateTime> oilFillDates = null;
+
+            dohOil.Reset();
+            dohOil.SqlCmd =
+                "SELECT OilFillDate " +
+                "FROM hsj_oil_fill_record " +
+                "WHERE mmsi='" + mmsi + "' " +
+                "AND (OilFillDate >= '" + stime.ToString("yyyy-MM-dd") + "' " +
+                "AND OilFillDate < '" + etime.ToString("yyyy-MM-dd") + "') " +
+                "ORDER BY OilFillDate ASC ";
+            DataTable dt = dohOil.GetDataTable();
+
+            if (dt != null && dt.Rows != null && dt.Rows.Count > 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    DateTime fillDate;
+                    if (DateTime.TryParse(dt.Rows[i]["OilFillDate"].ToString(), out fillDate) == true)
+                    {
+                        if (oilFillDates == null)
+                        {
+                            oilFillDates = new List<DateTime>();
+                        }
+
+                        if (oilFillDates != null)
+                        {
+                            oilFillDates.Add(fillDate);
+                        }
+                    }
+                }
+
+            }
+
+            return oilFillDates;
+        }
+
+        /// <summary>
+        /// get oil save recoeds month calcuated
+        /// </summary>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <returns></returns>
+        private List<OilMonthSaveRecord> GetOilSaveRecordsMonthCalced(DateTime stime, DateTime etime)
+        {
+            List<OilMonthSaveRecord> records = null;
+            int count = GetMonthCount(stime, etime);
+
+            DateTime curDate = new DateTime(stime.Year, stime.Month, 1);
+            HSJ_OilSaveRecordYear saveYearRecord = null;
+            double[] oilFills = new double[12];
+            double[] oilConsumes = new double[12];
+            double saveAmount = 0;
+
+            //WriteLocalLog("GetOilSaveRecordsMonthCalced");
+            //WriteLocalLog("Count: " + count.ToString());
+
+            int i = 0;
+            while (i < count)
+            {
+                DateTime nextDate = curDate.AddMonths(i);
+
+                if (saveYearRecord == null ||
+                    nextDate.Year != curDate.Year)
+                {
+                    saveAmount = 0;
+                    saveYearRecord = getOilSaveYearRecord(nextDate.AddYears(-1));
+                    if (saveYearRecord != null) double.TryParse(saveYearRecord.OilYearSaveAmount, out saveAmount);
+
+                    //WriteLocalLog("saveAmount: " + saveAmount.ToString());
+
+                    for (int m = 0; m < 12; m++)
+                    {
+                        oilFills[m] = 0;
+                        oilConsumes[m] = 0;
+                    }
+
+                    List<HSJ_OilFillRecordMonth> preRecords = getOilFillYearRecords(nextDate);
+                    for (int n = 0; (preRecords != null) && (n < preRecords.Count); n++)
+                    {
+                        DateTime preDateTime;
+                        if (DateTime.TryParse(preRecords[n].OilMonthFillDate, out preDateTime) == false) continue;
+                        int month = preDateTime.Month;
+
+                        double oilFill = 0, oilConsume = 0;
+                        if (double.TryParse(preRecords[n].OilMonthFillAmount, out oilFill) == true) oilFills[month - 1] = oilFill;
+                        if (double.TryParse(preRecords[n].OilMonthConsumeAmount, out oilConsume) == true) oilConsumes[month - 1] = oilConsume;
+
+                        //WriteLocalLog("Month: " + month.ToString() + "Fill: " + oilFill + "Consume: " + oilConsume);
+                    }
+                }
+
+                if (records == null)
+                {
+                    records = new List<OilMonthSaveRecord>();
+                }
+
+                OilMonthSaveRecord saveRecord = new OilMonthSaveRecord();
+                saveRecord.saveID = i;
+                saveRecord.saveDate = nextDate;
+                saveRecord.oilFillDates = GetOilFillDates(nextDate, nextDate.AddMonths(1));
+
+                saveRecord.lastMonthOilSave = saveAmount;
+                {
+                    for (int j = 0; j < nextDate.Month - 1; j++)
+                    {
+                        saveRecord.lastMonthOilSave += oilFills[j];
+                        saveRecord.lastMonthOilSave -= oilConsumes[j];
+                    }
+                }
+
+                saveRecord.saveAmount = saveRecord.lastMonthOilSave;
+                {
+                    saveRecord.saveAmount += oilFills[nextDate.Month - 1];
+                    saveRecord.saveAmount -= oilConsumes[nextDate.Month - 1];
+                }
+
+                saveRecord.oilFillAmount = oilFills[nextDate.Month - 1];
+                saveRecord.oilConsumeAmount = oilConsumes[nextDate.Month - 1];
+                records.Add(saveRecord);
+
+                i++;
+            }
+
+            return records;
+        }
+
     }
 }
