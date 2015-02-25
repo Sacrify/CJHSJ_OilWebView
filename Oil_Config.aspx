@@ -75,8 +75,7 @@
         }
 
         function SaveConfig() {
-            var mmsi = parent.cur_mmsi;
-            if (IsValidValue(mmsi) == false) {
+            if (IsValidValue(parent.mmsi) == false) {
                 $.messager.show({
                     title: '请选择船只',
                     msg: '请先选择需要计时的船只',
@@ -84,6 +83,7 @@
                 });
                 return;
             }
+            var mmsi = parent.cur_mmsi;
 
             parent.warning_llun = document.getElementById("llun_rps_warning").value;
             parent.warning_loil = document.getElementById("lmain_oil_gps_warning").value;

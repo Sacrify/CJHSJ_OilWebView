@@ -63,9 +63,7 @@
         var thisYearConsumeRecords = new Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
         function EnsureMMSI() {
-            var mmsi = parent.cur_mmsi;
-
-            if (IsValidValue(mmsi == false)) {
+            if (IsValidValue(parent.mmsi) == false) {
                 $.messager.show({
                     title: '请选择船只',
                     msg: '请先选择需要查看加油记录的船只',

@@ -95,6 +95,20 @@ function GetDateString(date) {
     return curDate;
 }
 
+function GetMonthString(date) {
+    var d = date;
+    var year = d.getFullYear();
+    var month = d.getMonth() + 1;
+
+    var curMonth = year;
+    if (month > 9)
+        curMonth = curMonth + "-" + month;
+    else
+        curMonth = curMonth + "-" + "0" + month;
+
+    return curMonth;
+}
+
 function GetDateLocalString(date) {
     var d = date;
     var year = d.getFullYear();
@@ -145,6 +159,10 @@ function GetCurDateTimeString() {
 
 function GetCurDateString() {
     return GetDateString(new Date());
+}
+
+function GetCurMonthString() {
+    return GetMonthString(new Date());
 }
 
 function GetCurDateLocalString() {

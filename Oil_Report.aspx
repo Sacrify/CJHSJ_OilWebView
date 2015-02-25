@@ -18,7 +18,7 @@
 
     <script type="text/javascript">
 
-        function getLastMonth(date) {
+        function GetLastMonth(date) {
             var daysInMonth = new Array([0], [31], [28], [31], [30], [31], [30], [31], [31], [30], [31], [30], [31]);
             var strYear = date.getFullYear();
             var strDay = date.getDate();
@@ -44,7 +44,7 @@
             date.setFullYear(strYear, strMonth - 1, strDay);
         }
 
-        function getLast3Month(date) {
+        function GetLast3Month(date) {
             var daysInMonth = new Array([0], [31], [28], [31], [30], [31], [30], [31], [31], [30], [31], [30], [31]);
             var strYear = date.getFullYear();
             var strDay = date.getDate();
@@ -71,9 +71,7 @@
         }
 
         function EnsureMMSI() {
-            var mmsi = parent.cur_mmsi;
-
-            if (IsValidValue(mmsi) == false) {
+            if (IsValidValue(parent.mmsi) == false) {
                 $.messager.show({
                     title: '请选择船只',
                     msg: '请先选择需要导出报表的船只',
@@ -83,6 +81,327 @@
             }
 
             return true;
+        }
+
+        $(function () {
+
+            //查询
+            $("#search_btn").click(function () {
+                UpdateHistoryStat();
+            });
+
+            //导出
+            $("#export_year_btn").click(function () {
+                if (EnsureMMSI() == false) return;
+
+                $("#yearDatePicker").val(GetCurMonthString());
+                $('#month_dlg').dialog('close');
+                $('#year_dlg').dialog('open');
+                $('#year_dlg').panel('resize', { width: 320, height: 120 });
+                //                $('#year_dlg').panel('move', {
+                //                    top: 150,
+                //                    left: 200
+                //                });
+            });
+
+            $("#export_year_btn2").click(function () {
+                if (ensureMMSI() == false) return;
+                var btime = $('#yearDatePicker').val();
+                ExportHistoryStat("year", btime);
+                $('#year_dlg').dialog('close');
+            });
+
+            $("#export_cur_btn").click(function () {
+                var btime = $('#beginTime').val();
+                var etime = $('#endTime').val();
+                var bdate = ParseDateString(btime.toString());
+                var edate = ParseDateString(etime.toString());
+                GetLast3Month(edate);
+                if (bdate.getTime() < edate.getTime()) {
+                    $.messager.show({
+                        title: '时间限制(三个月以内)',
+                        msg: '时间查询范围在三个月以内',
+                        showType: 'show'
+                    });
+                    return;
+                }
+
+                ExportHistoryStat("cur", btime, etime);
+            });
+
+            $("#export_month_btn").click(function () {
+                if (ensureMMSI() == false) return;
+                $("#monthDatePicker").val(GetCurMonthString());
+                $('#year_dlg').dialog('close');
+                $('#month_dlg').dialog('open');
+                $('#month_dlg').panel('resize', { width: 320, height: 120 });
+                //                $('#month_dlg').panel('move', {
+                //                    top: 150,
+                //                    left: 200
+                //                });
+            });
+
+            $("#export_month_btn2").click(function () {
+                if (EnsureMMSI() == false) return;
+                var btime = $('#monthDatePicker').val();
+                ExportHistoryStat("month", btime);
+                $('#month_dlg').dialog('close');
+            });
+
+            $("#swiftTime_1month").click(function () {
+                var now = new Date();
+                var start = new Date();
+
+                GetLastMonth(start);
+
+                $("#endTime").val(GetDateString(now));
+                $("#beginTime").val(GetDateString(start));
+            });
+
+            $("#swiftTime_3month").click(function () {
+                var now = new Date();
+                var start = new Date();
+
+                GetLast3Month(start);
+
+                $("#endTime").val(GetDateString(now));
+                $("#beginTime").val(GetDateString(start));
+            });
+
+            //初始化默认值
+            var mydate = new Date();
+            var etime = GetDateString(mydate);
+            $("#endTime").val(etime);
+            GetLastMonth(mydate);
+            var stime = GetDateString(mydate);
+            $("#beginTime").val(stime);
+
+            $('#month_dlg').dialog({
+                title: '月报表打印,请选择月份:',
+                iconCls: 'icon-save',
+                closed: true,
+                modal: false,
+                draggable: true,
+                resizable: false,
+                zIndex: 9100
+            });
+
+            $('#year_dlg').dialog({
+                title: '年报表打印,请选择年份:',
+                iconCls: 'icon-save',
+                closed: true,
+                modal: false,
+                draggable: true,
+                resizable: false,
+                zIndex: 9100
+            });
+
+        });
+
+        var historyData;
+        var onePage = 10;
+        var curPage;
+        var allPages;
+
+        function reduceOnePage() {
+            var tmpCurPage = curPage;
+            curPage--;
+            if (curPage < 0 || curPage > allPages) curPage = 0;
+            if (curPage == tmpCurPage) return;
+            UpdateHistoryTable();
+        }
+
+        function increaseOnePage() {
+            var tmpCurPage = curPage;
+            curPage++;
+            if (curPage < 0 || curPage > allPages) curPage = allPages;
+            if (curPage == tmpCurPage) return;
+            UpdateHistoryTable();
+        }
+
+        function gotoOnePage() {
+            var gotoPage = parseInt($("#gotoPage").val()) - 1;
+            if (curPage == gotoPage) return;
+            curPage = gotoPage;
+            UpdateHistoryTable();
+        }
+
+        var previousRowStr = null;
+        function UpdateHistoryTable() {
+
+            if (curPage < 0 || curPage > allPages) curPage = 0;
+            var rowStr;
+
+            var index = 0;
+            for (var i = curPage * onePage; i < (curPage * onePage + onePage) && i < historyData.length; i++, index++) {
+
+                rowStr += "<tr>";
+
+                rowStr += "<td>";
+                rowStr += "<span>";
+                rowStr += historyData[i].stime;
+                rowStr += "</span>";
+                rowStr += "</td>";
+
+                rowStr += "<td>";
+                rowStr += "<span>";
+                rowStr += OilHelper_GetMil(historyData[i]);
+                rowStr += "</span>";
+                rowStr += "</td>";
+
+                rowStr += "<td>";
+                rowStr += "<span>";
+                rowStr += OilHelper_GetSailTime(historyData[i]);
+                rowStr += "</span>";
+                rowStr += "</td>";
+
+                rowStr += "<td>";
+                rowStr += "<span>";
+                rowStr += OilHelper_GetRunningTime(historyData[i]);
+                rowStr += "</span>";
+                rowStr += "</td>";
+
+                rowStr += "<td>"
+                rowStr += "<span>";
+                rowStr += OilHelper_GetOil(historyData[i]);
+                rowStr += "</span>";
+                rowStr += "</td>";
+
+                rowStr += "<td>";
+                rowStr += "<span>";
+                rowStr += OilHelper_GetOilCost(historyData[i]);
+                rowStr += "</span>";
+                rowStr += "</td>";
+
+                rowStr += "</tr>"
+            }
+
+            rowStr += "<tr align='center'>";
+            rowStr += "<td colspan='5' style='color:White'>";
+
+            rowStr += ("第" + (curPage + 1) + "页");
+            rowStr += "&nbsp;&nbsp;";
+            rowStr += ("共" + (allPages + 1) + "页");
+            rowStr += "&nbsp;&nbsp;";
+
+            rowStr += "到第";
+            rowStr += "<input type='text' class='inputConfig' id='gotoPage' />";
+            rowStr += "页";
+            rowStr += "&nbsp;&nbsp;";
+            rowStr += "<a id='hist_goto_btn' name='hist_goto_btn' href='#' style='color:#6AA011;' onclick='gotoOnePage();'>跳转</a>";
+
+            rowStr += "&nbsp;&nbsp;&nbsp;&nbsp;";
+            rowStr += "<a id='hist_pre_btn' name='hist_pre_btn' href='#' style='color:#6AA011;' onclick='reduceOnePage();'>上一页</a>";
+            rowStr += "&nbsp;&nbsp;&nbsp;&nbsp;";
+            rowStr += "<a id='hist_next_btn' name='hist_next_btn' href='#' style='color:#6AA011;' onclick='increaseOnePage();'>下一页</a>";
+            rowStr += "</td>";
+            rowStr += "</tr>";
+
+            ClearHisStaTable();
+            previousRowStr = $(rowStr).insertAfter($("#oil_hist_table_head"));
+        }
+
+        function UpdateHistoryStat() {
+
+            if (IsValidValue(parent.cur_mmsi) == false) {
+                return;
+            }
+            var mmsi = parent.cur_mmsi;
+
+            var btime = $('#beginTime').val();
+            var etime = $('#endTime').val();
+            var bdate = ParseDateString(btime.toString());
+            var edate = ParseDateString(etime.toString());
+            GetLast3Month(edate);
+            if (bdate.getTime() < edate.getTime()) {
+                $.messager.show({
+                    title: '时间限制(三个月以内)',
+                    msg: '时间查询范围在三个月以内',
+                    showType: 'show'
+                });
+                return;
+            }
+
+            $.ajax({
+                type: "get",
+                dataType: "json",
+                data: "mmsi=" + mmsi + "&btime=" + $('#beginTime').val() + "&etime=" + $('#endTime').val(),
+                url: "shipoil_ajax.aspx?oper=getOilHistoryStatistics",
+                error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
+                success: function (json) {
+                    if (json) {
+                        $("#query_btime").html($('#beginTime').val());
+                        $("#query_etime").html($('#endTime').val());
+                        $("#query_dist").html(OilHelper_GetMil(json));
+                        $("#query_sail_time").html(OilHelper_GetSailTime(json));
+                        $("#query_running_time").html(OilHelper_GetRunningTime(json));
+                        $("#query_oil").html(OilHelper_GetOil(json));
+                        $("#query_cost").html(OilHelper_GetOilCost(json));
+                    }
+                }
+            });
+
+            $.ajax({
+                type: "get",
+                dataType: "json",
+                data: "mmsi=" + mmsi + "&btime=" + $('#beginTime').val() + "&etime=" + $('#endTime').val(),
+                url: "shipoil_ajax.aspx?oper=getOilHistListNoPaging",
+                error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
+                success: function (d) {
+                    var jsondata = eval(d); // convert json data
+                    historyData = jsondata;
+
+                    allPages = parseInt(historyData.length / onePage, 10);
+                    curPage = 0;
+
+                    // [0, allPages];
+
+                    UpdateHistoryTable();
+                }
+            });
+        }
+
+        function ClearHisStaTable() {
+            if (previousRowStr != null) {
+                previousRowStr.remove();
+                previousRowStr = null;
+            }
+        }
+
+        function ClearHistStaResult() {
+            $("#query_btime").html(0);
+            $("#query_etime").html(0);
+            $("#query_dist").html(0);
+            $("#query_sail_time").html(0);
+            $("#query_running_time").html(0);
+            $("#query_oil").html(0);
+            $("#query_cost").html(0);
+            ClearHisStaTable();
+        }
+
+        function ExportHistoryStat() {
+            if (EnsureMMSI() == false) return;
+            var mmsi = parent.cur_mmsi;
+            var form = $("#exportExcelForm");
+            var inputMMSI = $("#exportMMSI");
+            inputMMSI.attr('value', mmsi);
+
+            if (arguments.length >= 1) {
+                var exportType = $("#exportType");
+                exportType.attr('value', arguments[0]);
+            }
+
+            if (arguments.length >= 2) {
+                var btime = $("#btime");
+                btime.attr('value', arguments[1]);
+            }
+
+            if (arguments.length >= 3) {
+                var etime = $("#etime");
+                etime.attr('value', arguments[2]);
+            }
+
+            form.submit();
         }
 
     </script>

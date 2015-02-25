@@ -210,6 +210,19 @@ namespace CJHSJ_OilWebView
                     getOilHistoryStatistics();
                     break;
 
+                case "getOilHistListNoPaging":
+                    getShipOilInfo();
+                    getOilHistListNoPaging();
+                    break;
+
+                case "exportHistoryStatusToExcel":
+                    {
+                        bWriteResponse = false;
+                        getShipOilInfo();
+                        ExportHistoryStatusToExcel();
+                    }
+                    break;
+
                 case "getOilSaveYearRecord":
                     getOilSaveYearRecord();
                     break;
@@ -1484,6 +1497,631 @@ namespace CJHSJ_OilWebView
             }
         }
 
+        /// <summary>
+        /// return oil history list without paging
+        /// </summary>
+        private void getOilHistListNoPaging()
+        {
+            btime = QueryString("btime");
+            etime = QueryString("etime");
+
+            DateTime bDateTime = Convert.ToDateTime(btime);
+            DateTime eDateTime = Convert.ToDateTime(etime);
+
+            DateTime dtBtime = new DateTime(bDateTime.Year, bDateTime.Month, bDateTime.Day);
+            DateTime dtEtime = new DateTime(eDateTime.Year, eDateTime.Month, eDateTime.Day);
+
+            if (dtEtime < dtBtime.AddDays(1))
+            {
+                this._response = JsonResult(0, "未查找到数据");
+                return;
+            }
+
+            DateTime dtTime = new DateTime(bDateTime.Year, bDateTime.Month, bDateTime.Day);
+
+            List<OilHis> items = new List<OilHis>();
+            OilHis si = null;
+
+            while (dtTime < dtEtime)
+            {
+                si = getShipAccTotal(dtTime.ToString("yyyy-MM-dd"), dtTime.AddDays(1).ToString("yyyy-MM-dd"));
+                if (si != null)
+                {
+                    si.stime = dtTime.ToString("yyyy-MM-dd");
+                    items.Add(si);
+                }
+
+                dtTime = dtTime.AddDays(1);
+            }
+
+            // WriteLocalLog(Cxw.Utils.dtHelp.ToJson((Object)items));
+
+            //输出返回
+            if (items.Count > 0)
+            {
+                items.Reverse();
+                dtHelp.ResutJsonStr((Object)items);
+            }
+            else
+            {
+                this._response = JsonResult(0, "未查找到数据");
+            }
+        }
+
+        public enum EXPORT_TYPE
+        {
+            NONE = 0,
+            YEAR,
+            MONTH,
+            CUR,
+            COUNT
+        }
+
+        public enum EXPORT_BY
+        {
+            NONE = 0,
+            DAY,
+            MONTH,
+            COUNT
+        }
+
+        protected double EnsurePositive(double num)
+        {
+            return num < 0 ? 0 : num;
+        }
+
+        private static volatile object lockFile = new object();
+        public void ExportHistoryStatusToExcel()
+        {
+            string exportType = QueryString("exportType");
+            EXPORT_TYPE type = EXPORT_TYPE.NONE;
+
+            if (string.Compare(exportType, "year", true) == 0)
+            {
+                type = EXPORT_TYPE.YEAR;
+            }
+            else if (string.Compare(exportType, "month", true) == 0)
+            {
+                type = EXPORT_TYPE.MONTH;
+            }
+            else if (string.Compare(exportType, "cur", true) == 0)
+            {
+                type = EXPORT_TYPE.CUR;
+            }
+
+            if (type == EXPORT_TYPE.NONE) return;
+
+            DateTime bTime = DateTime.Now;
+            DateTime eTime = DateTime.Now;
+
+            try
+            {
+                bTime = Convert.ToDateTime(QueryString("btime"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("'{0}' is not in the proper format.", QueryString("btime"));
+                if (type == EXPORT_TYPE.YEAR || type == EXPORT_TYPE.MONTH || type == EXPORT_TYPE.CUR)
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+                eTime = Convert.ToDateTime(QueryString("etime"));
+            }
+            catch (Exception e)
+            {
+                if (type == EXPORT_TYPE.CUR)
+                {
+                    return;
+                }
+                Console.WriteLine("'{0}' is not in the proper format.", QueryString("etime"));
+            }
+
+            bool bFileCache = false;
+
+            switch (type)
+            {
+                case EXPORT_TYPE.YEAR:
+                    {
+                        bFileCache =
+                            (bTime.Year < DateTime.Now.Year) ||
+                            (bTime.Year == DateTime.Now.Year && bTime.Month < DateTime.Now.Month);
+                        break;
+                    }
+
+                case EXPORT_TYPE.MONTH:
+                    {
+                        bFileCache =
+                            (bTime.Year < DateTime.Now.Year) ||
+                            (bTime.Year == DateTime.Now.Year && bTime.Month < DateTime.Now.Month);
+                        break;
+                    }
+
+                case EXPORT_TYPE.CUR:
+                    {
+                        bFileCache = false;
+                        break;
+                    }
+            }
+
+            // Temporarily disable file cache for oil density could be modified and the excel is not valid.
+            bFileCache = false;
+
+            if (bFileCache)
+            {
+                string timeMark = string.Empty;
+                if (type == EXPORT_TYPE.YEAR) timeMark = "year";
+                else if (type == EXPORT_TYPE.MONTH) timeMark = "month";
+
+                // excel name
+                string filepath = "C:\\Temp\\";
+                string filename =
+                    filepath +
+                    "ship_" + mmsi + "_" + timeMark + "_" +
+                    bTime.ToString("yyyy-MM") + ".xls";
+
+                if (File.Exists(filename))
+                {
+                    DownloadExcel(filename);
+                }
+                else
+                {
+                    lock (lockFile)
+                    {
+                        if (File.Exists(filename))
+                        {
+                            DownloadExcel(filename);
+                            return;
+                        }
+                        else
+                        {
+                            string content = ExportHistoryStatusContent(type, bTime, eTime);
+
+                            try
+                            {
+                                StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8);
+                                if (sw != null)
+                                {
+                                    sw.Write(content);
+                                    sw.Flush();
+                                    sw.Close();
+                                }
+
+                                DownloadExcel(filename);
+                            }
+                            catch (Exception e)
+                            {
+                                //this._response = JsonResult(0, "未查找到数据");
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                string content = string.Empty;
+                string excelName = string.Empty;
+
+                switch (type)
+                {
+                    case EXPORT_TYPE.YEAR:
+                        {
+                            content = ExportHistoryStatusContent(
+                                        type,
+                                        bTime);
+
+                            excelName = "ship_" + mmsi + "_year_" +
+                                bTime.ToString("yyyy-MM") + ".xls";
+                            break;
+                        }
+
+                    case EXPORT_TYPE.MONTH:
+                        {
+                            content = ExportHistoryStatusContent(
+                                        type,
+                                        bTime);
+
+                            excelName = "ship_" + mmsi + "_month_" +
+                                bTime.ToString("yyyy-MM") + ".xls";
+                            break;
+                        }
+
+                    case EXPORT_TYPE.CUR:
+                        {
+                            content = ExportHistoryStatusContent(
+                                type,
+                                bTime,
+                                eTime);
+
+                            excelName =
+                                "ship_" + mmsi +
+                                "_" + bTime.ToString("MM-dd") +
+                                "_" + eTime.ToString("MM-dd") + ".xls";
+                            break;
+                        }
+
+                }
+
+                if (string.IsNullOrEmpty(content) == false &&
+                    string.IsNullOrEmpty(excelName) == false)
+                {
+                    DownloadExcelContent(content, excelName);
+                }
+
+                return;
+            }
+        }
+
+        private string ExportHistoryStatusContent(EXPORT_TYPE type, DateTime btime, DateTime etime = new DateTime())
+        {
+            EXPORT_BY by = type == EXPORT_TYPE.YEAR ? EXPORT_BY.MONTH : EXPORT_BY.DAY;
+            ShipInfo shipinfo = getShipInfoByMMSI();
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<table style='width:649px; height:978px; text-align:center; font-size:14px; font-family:@微软雅黑; word-wrap: break-word;'> <!-- A4 size -->");
+
+            sb.Append("<tr class='oiltrMenu'>");
+            sb.Append("<td colspan='11' style='text-align:center; vertical-align:middle; font-size:18px;'>");
+            sb.Append((char)10 + "武汉海事局船艇燃料消耗统计表" + (char)10);
+            sb.Append("</td>");
+            sb.Append("</tr>");
+
+            sb.Append("<tr class='oiltrMenu' style='text-align:left;' >");
+            sb.Append("<td colspan='3'>");
+            sb.Append("编制单位：");
+            sb.Append("</td>");
+
+            sb.Append("<td colspan='2'>");
+            sb.Append("船名：" + (shipinfo == null ? string.Empty : shipinfo.shipname));
+            sb.Append("</td>");
+
+            sb.Append("<td colspan='2'>");
+            sb.Append("船舶类型：");
+            sb.Append("</td>");
+
+            sb.Append("<td colspan='4'>");
+            sb.Append("主机功率(KW)：");
+            sb.Append("</td>");
+            sb.Append("</tr>");
+
+            sb.Append("<tr class='oiltrMenu'>");
+            sb.Append("<td rowspan='2' class='oiltdBorder' style='width:35px'>序号</td>");
+            sb.Append("<td rowspan='2' class='oiltdBorderNoLeft' style='width:77px'>月份</td>");
+            sb.Append("<td rowspan='2' class='oiltdBorderNoLeft' style='width:70px'>船舶巡航" + (char)10 + "时间(H)</td>");
+            sb.Append("<td rowspan='2' class='oiltdBorderNoLeft' style='width:70px'>主机运转" + (char)10 + "时间(H)</td>");
+            sb.Append("<td rowspan='2' class='oiltdBorderNoLeft' style='width:70px'>柴油消耗" + (char)10 + "(KG)</td>");
+            sb.Append("<td rowspan='2' class='oiltdBorderNoLeft' style='width:81px'>柴油市场价" + (char)10 + "格(元/吨)</td>");
+            sb.Append("<td colspan='4' class='oiltdBorderNoLeft' style='width:162px'>当月加油记录</td>");
+            sb.Append("<td rowspan='2' class='oiltdBorderNoLeft' style='width:81px'>当月加油" + (char)10 + "时间</td>");
+            sb.Append("</tr>");
+
+            sb.Append("<tr class='oiltrMenu'>");
+            sb.Append("<td class='oiltdBorderNoLeftTop' style='width:40.5px'>上月结存(KG)</td>");
+            sb.Append("<td class='oiltdBorderNoLeftTop' style='width:40.5px'>本月加油(KG)</td>");
+            sb.Append("<td class='oiltdBorderNoLeftTop' style='width:40.5px'>本月使用(KG)</td>");
+            sb.Append("<td class='oiltdBorderNoLeftTop' style='width:40.5px'>本月结存(KG)</td>");
+            sb.Append("</tr>");
+
+            int count = 0;
+
+            if (type == EXPORT_TYPE.YEAR) count = 12;
+            if (type == EXPORT_TYPE.MONTH)
+            {
+                count = DateTime.DaysInMonth(btime.Year, btime.Month);
+            }
+            if (type == EXPORT_TYPE.CUR)
+            {
+                TimeSpan ts = etime - btime;
+                count = ts.Days;
+            }
+
+            List<OilMonthSaveRecord> oilSaveRecords = null;
+            if (type == EXPORT_TYPE.YEAR)
+            {
+                DateTime oilSaveSTime = btime.AddMonths(-count + 1);
+                DateTime oilSaveETime = btime;
+                oilSaveRecords = GetOilSaveRecordsMonthCalced(oilSaveSTime, oilSaveETime);
+            }
+
+
+            for (int i = 0; i <= count; i++)
+            {
+                bool bSum = (i == count);
+
+                OilHis si = null;
+                DateTime bDateTime = DateTime.Now;
+
+                switch (type)
+                {
+                    case EXPORT_TYPE.YEAR:
+                        {
+                            DateTime searchMonth = new DateTime(btime.Year, btime.Month, 1);
+
+                            if (bSum == false)
+                            {
+                                bDateTime = searchMonth.AddMonths(-count + i + 1);
+                                string bTime = bDateTime.ToString("yyyy-MM-dd");
+                                string eTime = bDateTime.AddMonths(1).ToString("yyyy-MM-dd");
+                                si = getShipAccTotal(bTime, eTime);
+                            }
+                            else
+                            {
+                                bDateTime = searchMonth.AddMonths(-count + 1);
+                                string bTime = bDateTime.ToString("yyyy-MM-dd");
+                                string eTime = bDateTime.AddMonths(count).ToString("yyyy-MM-dd");
+                                si = getShipAccTotal(bTime, eTime);
+                            }
+
+                            break;
+                        }
+
+                    case EXPORT_TYPE.MONTH:
+                        {
+                            DateTime searchMonth = new DateTime(btime.Year, btime.Month, 1);
+
+                            if (bSum == false)
+                            {
+                                bDateTime = searchMonth.AddDays(i);
+                                string bTime = bDateTime.ToString("yyyy-MM-dd");
+                                string eTime = bDateTime.AddDays(1).ToString("yyyy-MM-dd");
+                                si = getShipAccTotal(bTime, eTime);
+                            }
+                            else
+                            {
+                                bDateTime = searchMonth;
+                                string bTime = bDateTime.ToString("yyyy-MM-dd");
+                                string eTime = bDateTime.AddDays(count).ToString("yyyy-MM-dd");
+                                si = getShipAccTotal(bTime, eTime);
+                            }
+
+                            break;
+                        }
+
+                    case EXPORT_TYPE.CUR:
+                        {
+                            if (bSum == false)
+                            {
+                                bDateTime = btime.AddDays(i);
+                                string bTime = bDateTime.ToString("yyyy-MM-dd");
+                                string eTime = bDateTime.AddDays(1).ToString("yyyy-MM-dd");
+                                si = getShipAccTotal(bTime, eTime);
+                            }
+                            else
+                            {
+                                bDateTime = btime;
+                                string bTime = bDateTime.ToString("yyyy-MM-dd");
+                                string eTime = bDateTime.AddDays(count).ToString("yyyy-MM-dd");
+                                si = getShipAccTotal(bTime, eTime);
+                            }
+                            break;
+                        }
+                }
+
+                sb.Append("<tr class='oiltr'>");
+                if (bSum == false)
+                {
+                    sb.Append("<td class='oiltdBorderNoTop'>" + (i + 1).ToString() + "</td>");
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>" +
+                        (by == EXPORT_BY.MONTH ? bDateTime.Year.ToString() + "年" : string.Empty) +
+                        bDateTime.Month.ToString() + "月" +
+                        (by == EXPORT_BY.DAY ? bDateTime.Day.ToString() + "日" : string.Empty) +
+                        "</td>");
+                }
+                else
+                {
+                    sb.Append("<td class='oiltdBorderNoTop' colspan='2'>合计</td>");
+                }
+
+                if (si == null)
+                {
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>0</td>");
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>0</td>");
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>0</td>");
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>0</td>");
+                }
+                else
+                {
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>" + Math.Round(EnsurePositive(Convert.ToDouble(si.sail_time)), 1).ToString() + "</td>");
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>" + Math.Round(EnsurePositive(Convert.ToDouble(si.running_time)), 1).ToString() + "</td>");
+
+                    double oilTotal =
+                        Convert.ToDouble(si.oil) +
+                        Convert.ToDouble(si.oil_ex);
+
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>" + Math.Round(EnsurePositive(oilTotal), 3).ToString() + "</td>");
+
+                    double oilcostTotal =
+                        Convert.ToDouble(si.oilcost) +
+                        Convert.ToDouble(si.oilcost_ex);
+
+                    sb.Append("<td class='oiltdBorderNoLeftTop'>" + Math.Round(EnsurePositive(oilcostTotal), 2).ToString() + "</td>");
+                }
+
+                OilMonthSaveRecord oilSaveRecord = null;
+                for (int k = 0; (oilSaveRecords != null && k < oilSaveRecords.Count); k++)
+                {
+                    OilMonthSaveRecord record = oilSaveRecords[k];
+                    if (record != null)
+                    {
+                        if (record.saveDate.Year == bDateTime.Year && record.saveDate.Month == bDateTime.Month)
+                        {
+                            oilSaveRecord = record;
+                            break;
+                        }
+                    }
+                }
+
+                sb.Append("<td class='oiltdBorderNoLeftTop'>" +
+                    (by == EXPORT_BY.MONTH && bSum == false ?
+                    (oilSaveRecord == null ? "0" : Math.Round(oilSaveRecord.lastMonthOilSave, 3).ToString())
+                    : string.Empty) + "</td>");
+                sb.Append("<td class='oiltdBorderNoLeftTop'>" +
+                    (by == EXPORT_BY.MONTH && bSum == false ?
+                    (oilSaveRecord == null ? "0" : Math.Round(oilSaveRecord.oilFillAmount, 3).ToString())
+                    : string.Empty) + "</td>");
+                sb.Append("<td class='oiltdBorderNoLeftTop'>" +
+                    (by == EXPORT_BY.MONTH && bSum == false ?
+                    (oilSaveRecord == null ? "0" : Math.Round(oilSaveRecord.oilConsumeAmount, 3).ToString())
+                    : string.Empty) + "</td>");
+                sb.Append("<td class='oiltdBorderNoLeftTop'>" +
+                    (by == EXPORT_BY.MONTH && bSum == false ?
+                    (oilSaveRecord == null ? "0" : Math.Round(oilSaveRecord.saveAmount, 3).ToString())
+                    : string.Empty) + "</td>");
+                sb.Append("<td class='oiltdBorderNoLeftTop'>" +
+                    (by == EXPORT_BY.MONTH && bSum == false ?
+                    (oilSaveRecord == null ? "0" : oilSaveRecord.getOilFillDates())
+                    : string.Empty) + "</td>");
+
+                sb.Append("</tr>");
+            }
+
+            sb.Append("<tr class='oiltr' style='text-align:left;' >");
+            sb.Append("<td colspan='4'>");
+            sb.Append("装备部门负责人:");
+            sb.Append("</td>");
+
+            sb.Append("<td colspan='4'>");
+            sb.Append("财务负责人:");
+            sb.Append("</td>");
+
+            sb.Append("<td colspan='3'>");
+            sb.Append("填报人:");
+            sb.Append("</td>");
+            sb.Append("</tr>");
+
+            sb.Append("</table>");
+
+            StringBuilder cssBuilder = new StringBuilder();
+
+            cssBuilder.Append(".oiltr");
+            cssBuilder.Append("{");
+            cssBuilder.Append("text-align:right;");
+            cssBuilder.Append("vertical-align:middle;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltrMenu");
+            cssBuilder.Append("{");
+            cssBuilder.Append("text-align:center;");
+            cssBuilder.Append("vertical-align:middle;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorderTop");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border-top:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorderLeft");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border-left:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorderRight");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border-right:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorderBottom");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border-bottom:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorder");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorderNoLeft");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border-top:.5pt solid black;");
+            cssBuilder.Append("border-right:.5pt solid black;");
+            cssBuilder.Append("border-bottom:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorderNoTop");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border-left:.5pt solid black;");
+            cssBuilder.Append("border-right:.5pt solid black;");
+            cssBuilder.Append("border-bottom:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            cssBuilder.Append(".oiltdBorderNoLeftTop");
+            cssBuilder.Append("{");
+            cssBuilder.Append("border-right:.5pt solid black;");
+            cssBuilder.Append("border-bottom:.5pt solid black;");
+            cssBuilder.Append("}");
+
+            string content = String.Format("<style type='text/css'>{0}</style>{1}", cssBuilder.ToString(), sb.ToString());
+            return content;
+        }
+
+
+        /// <param name="content">Excel中内容(Table格式)</param> 
+        /// 
+        public void DownloadExcelContent(string content, string filename)
+        {
+            string fileName = filename;//客户端保存的文件名  
+            Response.Clear();
+            Response.ClearContent();
+            Response.ClearHeaders();
+            Response.Buffer = false;
+            Response.AddHeader("Content-Disposition", "attachment;filename=" + fileName);
+            Response.AddHeader("Content-Length",
+                System.Text.Encoding.GetEncoding("UTF-8").GetByteCount(content).ToString());
+            Response.AddHeader("Content-Transfer-Encoding", "binary");
+            Response.ContentType = "application/octet-stream";
+            Response.ContentEncoding = System.Text.Encoding.GetEncoding("UTF-8");
+            Response.Write(content);
+            Response.Flush();
+            Response.End();
+        }
+
+        /// <summary>
+        /// Download excel directly
+        /// </summary>
+        /// <param name="filename"></param>
+        public void DownloadExcel(string filename)
+        {
+            //if (string.IsNullOrEmpty(filename) == true) 
+            //{
+            //    this._response = JsonResult(0, "未查找到数据");
+            //    return;
+            //}
+
+            //res.Clear();
+            //res.Buffer = true;
+            //res.Charset = "UTF-8";
+            //res.AddHeader("Content-Disposition", "attachment; filename=" + "Test.xls");
+            //res.ContentEncoding = System.Text.Encoding.GetEncoding("UTF-8");
+            //res.ContentType = "application/ms-excel";
+            //res.Write(content);
+            //res.WriteFile(filename);
+            //res.Flush();
+            //res.TransmitFile(filename);
+            //res.End();
+
+            //WriteFile实现下载  
+            string fileName = filename.Substring(filename.LastIndexOf('\\') + 1);//客户端保存的文件名  
+            string filePath = filename;//路径  
+
+            FileInfo fileInfo = new FileInfo(filePath);
+            Response.Clear();
+            Response.ClearContent();
+            Response.ClearHeaders();
+            Response.Buffer = false;
+            Response.AddHeader("Content-Disposition", "attachment;filename=" + fileName);
+            Response.AddHeader("Content-Length", fileInfo.Length.ToString());
+            Response.AddHeader("Content-Transfer-Encoding", "binary");
+            Response.ContentType = "application/octet-stream";
+            Response.ContentEncoding = System.Text.Encoding.GetEncoding("UTF-8");
+            Response.WriteFile(fileInfo.FullName);
+            Response.Flush();
+            Response.End();
+        }
 
         /// <summary>
         /// return oil save year record
@@ -1491,7 +2129,7 @@ namespace CJHSJ_OilWebView
         public void getOilSaveYearRecord()
         {
             DateTime fillMonth = DateTime.Now;
-            if (DateTime.TryParse(q("fill_month"), out fillMonth) == false)
+            if (DateTime.TryParse(QueryString("fill_month"), out fillMonth) == false)
             {
                 this._response = JsonResult(0, "未查找到数据");
                 return;
