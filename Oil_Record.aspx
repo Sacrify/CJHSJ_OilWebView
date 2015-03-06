@@ -63,7 +63,7 @@
         var thisYearConsumeRecords = new Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
         function EnsureMMSI() {
-            if (IsValidValue(parent.mmsi) == false) {
+            if (IsValidValue(parent.cur_mmsi) == false) {
                 $.messager.show({
                     title: '请选择船只',
                     msg: '请先选择需要查看加油记录的船只',
@@ -241,7 +241,7 @@
                 type: "get",
                 dataType: "json",
                 data: "mmsi=" + mmsi + "&fill_month=" + GetCurDateString(),
-                url: "ajax/shipoil_ajax.aspx?oper=getOilSaveYearRecord",
+                url: "shipoil_ajax.aspx?oper=getOilSaveYearRecord",
                 error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                 success: function (d) {
                     var jsondata = eval(d); // convert json data
@@ -255,7 +255,7 @@
                 type: "get",
                 dataType: "json",
                 data: "mmsi=" + mmsi + "&fill_month=" + GetCurDateString(),
-                url: "ajax/shipoil_ajax.aspx?oper=getOilFillYearRecords",
+                url: "shipoil_ajax.aspx?oper=getOilFillYearRecords",
                 error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                 success: function (d) {
 
@@ -283,7 +283,7 @@
                 type: "get",
                 dataType: "json",
                 data: "mmsi=" + mmsi + "&fill_month=" + GetCurDateString(),
-                url: "ajax/shipoil_ajax.aspx?oper=getOilFillRecords",
+                url: "shipoil_ajax.aspx?oper=getOilFillRecords",
                 error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                 success: function (d) {
 
@@ -388,7 +388,7 @@
                     type: "get",
                     dataType: "json",
                     data: "mmsi=" + mmsi + "&fill_month=" + GetCurDateString() + effectRow,
-                    url: "ajax/shipoil_ajax.aspx?oper=updateOilFillRecords",
+                    url: "shipoil_ajax.aspx?oper=updateOilFillRecords",
                     error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                     success: function (d) {
                         RefreshOilMonthFillRecords();

@@ -46,7 +46,7 @@
         });
 
         function EnsureMMSI() {
-            if (IsValidValue(parent.mmsi) == false) {
+            if (IsValidValue(parent.cur_mmsi) == false) {
                 $.messager.show({
                     title: '请选择船只',
                     msg: '请先选择需要计时的船只',
@@ -241,7 +241,7 @@
                 type: "get",
                 dataType: "json",
                 data: "mmsi=" + mmsi + "&btime=" + timingStartTime + "&etime=" + timingEndTime,
-                url: "ajax/shipoil_ajax.aspx?oper=getOilTimingStatistics",
+                url: "shipoil_ajax.aspx?oper=getOilTimingStatistics",
                 error: function (XmlHttpRequest, textStatus, errorThrown) { alert(XmlHttpRequest.responseText); },
                 success: function (json) {
                     var oilTimingStatInfo = json;

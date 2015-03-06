@@ -20,6 +20,10 @@
 
         var preRowStr = null;
 
+        $(function () {
+
+        });
+
         function UpdateConfigUI() {
             $("#seasonSet").combobox({
                 valueField: 'id',
@@ -75,7 +79,7 @@
         }
 
         function SaveConfig() {
-            if (IsValidValue(parent.mmsi) == false) {
+            if (IsValidValue(parent.cur_mmsi) == false) {
                 $.messager.show({
                     title: '请选择船只',
                     msg: '请先选择需要计时的船只',
@@ -115,7 +119,7 @@
             $('#price_oil_type').html(parent.getOilTypeString());
 
             if (preRowStr == null) {
-                var rowStr;
+                var rowStr = "";
 
                 rowStr += "<tr>";
                 rowStr += "<td colspan='2'>";
@@ -130,12 +134,11 @@
                 type: "get",
                 dataType: "json",
                 data: "oilType=" + parent.getOilType(),
-                url: "ajax/shipoil_ajax.aspx?oper=getOilPrices",
+                url: "shipoil_ajax.aspx?oper=getOilPrices",
                 error: function (XmlHttpRequest, textStatus, errorThrown) {
-                    Cxw.Loading.hide();
                     alert(XmlHttpRequest.responseText);
 
-                    var rowStrError;
+                    var rowStrError = "";
                     rowStrError += "<tr>";
                     rowStrError += "<td colspan='2'>";
                     rowStrError += "无法取得油价信息";
@@ -154,7 +157,7 @@
                         if ((json == undefined || json == null || json == '') ||
                         (json != undefined && json != null && json != '' && eval(json).length == 0)) {
 
-                            var rowStrNone;
+                            var rowStrNone = "";
 
                             rowStrNone += "<tr>";
                             rowStrNone += "<td colspan='2'>";

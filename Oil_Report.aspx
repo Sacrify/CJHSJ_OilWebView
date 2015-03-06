@@ -71,7 +71,7 @@
         }
 
         function EnsureMMSI() {
-            if (IsValidValue(parent.mmsi) == false) {
+            if (IsValidValue(parent.cur_mmsi) == false) {
                 $.messager.show({
                     title: '请选择船只',
                     msg: '请先选择需要导出报表的船只',
@@ -98,14 +98,14 @@
                 $('#month_dlg').dialog('close');
                 $('#year_dlg').dialog('open');
                 $('#year_dlg').panel('resize', { width: 320, height: 120 });
-                //                $('#year_dlg').panel('move', {
-                //                    top: 150,
-                //                    left: 200
-                //                });
+//                $('#year_dlg').panel('move', {
+//                    top: 200,
+//                    left: 200
+//                });
             });
 
             $("#export_year_btn2").click(function () {
-                if (ensureMMSI() == false) return;
+                if (EnsureMMSI() == false) return;
                 var btime = $('#yearDatePicker').val();
                 ExportHistoryStat("year", btime);
                 $('#year_dlg').dialog('close');
@@ -130,15 +130,15 @@
             });
 
             $("#export_month_btn").click(function () {
-                if (ensureMMSI() == false) return;
+                if (EnsureMMSI() == false) return;
                 $("#monthDatePicker").val(GetCurMonthString());
                 $('#year_dlg').dialog('close');
                 $('#month_dlg').dialog('open');
                 $('#month_dlg').panel('resize', { width: 320, height: 120 });
-                //                $('#month_dlg').panel('move', {
-                //                    top: 150,
-                //                    left: 200
-                //                });
+//                $('#month_dlg').panel('move', {
+//                    top: 200,
+//                    left: 200
+//                });
             });
 
             $("#export_month_btn2").click(function () {
@@ -230,7 +230,7 @@
         function UpdateHistoryTable() {
 
             if (curPage < 0 || curPage > allPages) curPage = 0;
-            var rowStr;
+            var rowStr = "";
 
             var index = 0;
             for (var i = curPage * onePage; i < (curPage * onePage + onePage) && i < historyData.length; i++, index++) {
@@ -277,7 +277,7 @@
             }
 
             rowStr += "<tr align='center'>";
-            rowStr += "<td colspan='5' style='color:White'>";
+            rowStr += "<td colspan='6' style='color:White'>";
 
             rowStr += ("第" + (curPage + 1) + "页");
             rowStr += "&nbsp;&nbsp;";

@@ -240,7 +240,13 @@ namespace CJHSJ_OilWebView
                     break;
 
                 default:
+                    DefaultResponse();
                     break;
+            }
+
+            if (bWriteResponse)
+            {
+                Response.Write(this._response);
             }
         }
 
@@ -668,6 +674,8 @@ namespace CJHSJ_OilWebView
 
             if (beginEndTime == true) // beginTime
             {
+                // !!! Here we MAY NEED TO find a last record from stime, for we cannot use SUM_OIL.
+                //sqlCmd += "AND a.stime <= '" + time + "' ORDER BY a.stime DESC";
                 sqlCmd += "AND a.stime >= '" + time + "' ORDER BY a.stime ASC";
             }
             else
@@ -705,7 +713,7 @@ namespace CJHSJ_OilWebView
         /// <returns></returns>
         Entity.OilHis getShipAccTotal(string btime, string etime, out string eEndTime, bool excludeEnd = true, bool ignoreOilPrice = false)
         {
-            WriteLocalLog("getShipAccTotal " + btime + " to " + etime);
+            WriteLocalLog("--> getShipAccTotal " + btime + " to " + etime);
             eEndTime = string.Empty;
 
             if ((mmsi == null) ||
@@ -1534,7 +1542,7 @@ namespace CJHSJ_OilWebView
                 dtTime = dtTime.AddDays(1);
             }
 
-            // WriteLocalLog(Cxw.Utils.dtHelp.ToJson((Object)items));
+            // WriteLocalLog(dtHelp.ToJson((Object)items));
 
             //输出返回
             if (items.Count > 0)
