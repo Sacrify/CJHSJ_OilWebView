@@ -123,14 +123,14 @@
                 (etime.getMonth() + 1) + "-" + etime.getDate());
             }
             else if (unit == "this_year") {
-                var bYear = btime.getYear();
+                var bYear = btime.getFullYear();
                 btime.setFullYear(bYear, 0, 1);
                 btime.setHours(0, 0, 0, 0);
 
                 etime.setFullYear(bYear + 1, 0, 1);
                 etime.setHours(0, 0, 0, 0);
 
-                $("#" + timeName).html(btime.getYear() + "年");
+                $("#" + timeName).html(btime.getFullYear() + "年");
             }
 
             if (mmsi != "" && mmsi != "undefine") {
