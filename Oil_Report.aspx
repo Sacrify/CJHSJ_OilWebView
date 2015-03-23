@@ -183,6 +183,8 @@
                 modal: false,
                 draggable: true,
                 resizable: false,
+                left: 320,
+                top: 120,
                 zIndex: 9100
             });
 
@@ -193,6 +195,8 @@
                 modal: false,
                 draggable: true,
                 resizable: false,
+                left: 320,
+                top: 120,
                 zIndex: 9100
             });
 
