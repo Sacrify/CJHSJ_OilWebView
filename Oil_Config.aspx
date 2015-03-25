@@ -35,14 +35,13 @@
                     id: '冬季',
                     text: '冬季'
                 }],
-                readonly: true,
+                readonly: false,
                 onChange: function (newValue, oldValue) {
-
                     if (oldValue == '夏季') {
-                        parent.oil_density_summer = ensurePositive(document.getElementById("oil_density").value);
+                        parent.oil_density_summer = EnsurePositive(document.getElementById("oil_density").value);
                     }
                     else if (oldValue == '冬季') {
-                        parent.oil_density_winter = ensurePositive(document.getElementById("oil_density").value);
+                        parent.oil_density_winter = EnsurePositive(document.getElementById("oil_density").value);
                     }
 
                     if (newValue == '夏季') {
@@ -104,10 +103,10 @@
             }
 
             if (parent.oil_season == 0) {
-                parent.oil_density_summer = ensurePositive(document.getElementById("oil_density").value);
+                parent.oil_density_summer = EnsurePositive(document.getElementById("oil_density").value);
             }
             else if (parent.oil_season == 1) {
-                parent.oil_density_winter = ensurePositive(document.getElementById("oil_density").value);
+                parent.oil_density_winter = EnsurePositive(document.getElementById("oil_density").value);
             }
 
             parent.SetShipConfig();
