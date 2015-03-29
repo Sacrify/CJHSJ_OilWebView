@@ -642,12 +642,6 @@ namespace CJHSJ_OilWebView
                 sqlCmd += " order by a.stime asc";
             }
 
-            //using (System.IO.StreamWriter sw = System.IO.File.AppendText("C:\\Temp\\log.txt"))
-            //{
-            //    sw.WriteLine(sqlCmd);
-            //    sw.Flush();
-            //}
-
             dohOil.SqlCmd = sqlCmd;
             return dohOil.GetDataTable();
         }
