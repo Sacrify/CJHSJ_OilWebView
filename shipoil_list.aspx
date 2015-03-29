@@ -53,13 +53,8 @@
                             cur_mmsi = shipInfo.mmsi;
                             cur_shipname = shipInfo.shipname;
 
-                            // On start up, get ready for configuration
-                            GetShipConfig();
-
                             // Start Timer
                             ResetInterval();
-
-
                         }
                         else {
                             alert("未安装该项服务，如需安装请联系027-82767708");
@@ -91,7 +86,6 @@
         /// Config
         ///
         function GetShipConfig() {
-
             if (IsValidValue(cur_mmsi) == false) {
                 ResetConfigValues();
                 return;
@@ -153,7 +147,7 @@
                 }
             });
         }
-        
+
 
         function ResetConfigValues() {
             warning_llun = 0;
@@ -253,29 +247,34 @@
                     }
                 }
 
-//                longTimerCount++;
+                longTimerCount++;
+                if (longTimerCount >= 12) {
+                    longTimerCount = 0;
 
-//                if (longTimerCount >= 12) {
-//                    longTimerCount = 0;
-
-//                    GetOilHisStaInfo();
-//                }
-
+                    var hitstoryWindow = document.getElementById("historyFrame").contentWindow;
+                    if (hitstoryWindow) {
+                        hitstoryWindow.UpdateHistory();
+                    }
+                }
             }
         }
 
-        function GetOilHisStaInfo() {
-//            if (cur_mmsi != '') {
-//                var rightHisWindow = document.getElementById("rightHisStaFrame").contentWindow;
-//                if (rightHisWindow) {
-//                    var chartWindow = rightHisWindow.document.getElementById("grapFrame").contentWindow;
-//                    if (chartWindow) {
-//                        chartWindow.updateShip();
-//                    }
-//                }
-//            }
+        function changeTab(title) {
+            if (IsValidValue(cur_mmsi)) {
+                if (title == "实时油耗") {
+                }
+                else if (title == "累计油耗") {
+                }
+                else if (title == '报警设置') {
+                    GetShipConfig();
+                }
+                else if (title == '加油记录') {
+                }
+            }
+            else if (title == '报警设置') {
+                resetConfigValues();
+            }
         }
-
     </script>
 
 </head>
@@ -319,4 +318,18 @@
         </div>
     </div>
 </body>
+
+<script type="text/javascript">
+    function onLoad() {
+        $('#tabs').tabs({
+            border: false,
+            onSelect: function (title) {
+                changeTab(title);
+            }
+        });
+    }
+
+    window.onload = onLoad;
+</script>
+
 </html>

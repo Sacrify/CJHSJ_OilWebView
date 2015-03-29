@@ -21,10 +21,6 @@
         var preRowStr = null;
 
         $(function () {
-
-        });
-
-        function UpdateConfigUI() {
             $("#seasonSet").combobox({
                 valueField: 'id',
                 textField: 'text',
@@ -52,7 +48,9 @@
                     }
                 }
             });
+        });
 
+        function UpdateConfigUI() {
             document.getElementById("llun_rps_warning").value = parent.getWarningLlun();
             document.getElementById("lmain_oil_gps_warning").value = parent.getWarningLoil();
             document.getElementById("speed_warning").value = parent.getWarningSpeed();

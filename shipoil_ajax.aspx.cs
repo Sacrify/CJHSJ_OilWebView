@@ -1392,10 +1392,13 @@ namespace CJHSJ_OilWebView
                     "( " + this.companyID + ", " +
                     QueryString("oil_type") + ", " +
                     QueryString("oil_density_summer") + ", " +
-                    QueryString("oil_density_winer") + ")";
+                    QueryString("oil_density_winter") + ")";
             }
 
             dohOil.SqlCmd = sqlCmd;
+
+            //WriteLocalLog("save hsj_oil_density sqlcmd:" + sqlCmd);
+
             result = dohOil.ExecuteSqlNonQuery();
 
             //WriteLocalLog("save hsj_oil_density:" + result.ToString());
