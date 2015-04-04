@@ -259,6 +259,13 @@
             }
         }
 
+        function SetOilFillRecords() {
+            var recordWindow = document.getElementById("recordFrame").contentWindow;
+            if (recordWindow) {
+                recordWindow.SetOilFillRecords();
+            }
+        }
+
         function changeTab(title) {
             if (IsValidValue(cur_mmsi)) {
                 if (title == "实时油耗") {
@@ -269,10 +276,11 @@
                     GetShipConfig();
                 }
                 else if (title == '加油记录') {
+                    SetOilFillRecords();
                 }
             }
             else if (title == '报警设置') {
-                resetConfigValues();
+                ResetConfigValues();
             }
         }
     </script>

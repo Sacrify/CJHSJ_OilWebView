@@ -76,8 +76,39 @@
         }
 
         $(function () {
+            $.extend($.fn.datagrid.defaults.editors, {
+                wdateEdit: {
+                    init: function (container, options) {
+                        var daysInMonth = new Array([0], [31], [28], [31], [30], [31], [30], [31], [31], [30], [31], [30], [31]);
+                        var btime = new Date();
+                        var strYear = btime.getFullYear();
+                        var strMonth = btime.getMonth() + 1;
+                        if (strYear % 4 == 0 && strYear % 100 != 0) {
+                            daysInMonth[2] = 29;
+                        }
+                        var strDay = daysInMonth[strMonth];
 
-
+                        var input = $('<input type="text" class="Wdate" onClick="WdatePicker({dateFmt:\'yyyy-MM-dd\', minDate:\'' + 
+                        strYear.toString() + '-' + strMonth.toString() + '-' + '1\', maxDate: \'' + 
+                        strYear.toString() + '-' + strMonth.toString() + '-' + strDay.toString() + '\'})" >').appendTo(container);
+                        return input;
+                    },
+                    getValue: function (target) {
+                        return $(target).val();
+                    },
+                    setValue: function (target, value) {
+                        $(target).val(value);
+                    },
+                    resize: function (target, width) {
+                        var input = $(target);
+                        if ($.boxModel == true) {
+                            input.width(width - (input.outerWidth() - input.width()));
+                        } else {
+                            input.width(width);
+                        }
+                    }
+                }
+            });
         });
 
         function ResetOilFillData() {
@@ -130,10 +161,11 @@
             $("#oil_fill_records_dlg").show();
 
             $("#oil_fill_records_dlg").dialog({
-                width: 580,
-                height: 300,
+                width: 600,
+                height: 500,
                 modal: false,
                 title: '加油记录',
+                resizable: true,
                 minimizable: false,
                 maximizable: false
             });
@@ -141,12 +173,12 @@
             $('#oil_fill_records_table').datagrid({
                 title: '编辑加油记录',
                 iconCls: 'icon-edit',
-                width: 530,
-                height: 250,
+                width: 600,
+                height: 500,
                 singleSelect: true,
                 columns: [[
             { field: 'fillID', title: '加油ID', width: 50 },
-            { field: 'fillDate', title: '加油时间', width: 100, editor: 'datebox' },
+            { field: 'fillDate', title: '加油时间', width: 100, editor: 'wdateEdit' },
             { field: 'fillAmount', title: '加油油量', width: 100, editor: 'numberbox' },
             { field: 'action', title: '操作', width: 100, align: 'center',
                 formatter: function (value, row, index) {

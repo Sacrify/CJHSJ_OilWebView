@@ -2586,6 +2586,7 @@ namespace CJHSJ_OilWebView
                     "mmsi = '" + mmsi + "' ";
             }
             dohOil.ExecuteSqlNonQuery();
+            this._response = JsonResult(1, "保存成功");
         }
 
         /// <summary>
