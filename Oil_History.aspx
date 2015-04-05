@@ -18,7 +18,7 @@
     <script type="text/javascript">
 
         $(function () {
-            UpdateHistory();
+//            UpdateHistory();
         });
 
         function UpdateHistory() {

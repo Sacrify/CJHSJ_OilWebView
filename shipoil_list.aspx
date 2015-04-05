@@ -271,6 +271,15 @@
                 if (title == "实时油耗") {
                 }
                 else if (title == "累计油耗") {
+                    var timingWindow = document.getElementById("timingFrame").contentWindow;
+                    if (timingWindow) {
+                        timingWindow.UpdateTiming();
+                    }
+
+                    var hitstoryWindow = document.getElementById("historyFrame").contentWindow;
+                    if (hitstoryWindow) {
+                        hitstoryWindow.UpdateHistory();
+                    }
                 }
                 else if (title == '报警设置') {
                     GetShipConfig();

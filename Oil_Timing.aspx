@@ -135,7 +135,7 @@
                 isTiming = true;
                 var cdt = getCookie("sTime" + mmsi);
                 timingEndTime = timingStartTime = IsValidValue(cdt) ? cdt : GetCurDateTimeString();
-                UpdateTiming();
+//                UpdateTiming();
             } else {
                 isTiming = false;
             }
